@@ -1,3 +1,35 @@
-import {ButtonHTMLAttributes,ReactNode} from 'react';import {motion} from 'framer-motion';import {cn} from '../utils/classNames';
-type Props={children:ReactNode;className?:string}&Omit<ButtonHTMLAttributes<HTMLButtonElement>,'onAnimationStart'|'onDrag'|'onDragEnd'|'onDragStart'>;
-export function Button({className,children,...props}:Props){return <motion.button whileTap={{scale:.96}} whileHover={{y:-2}} className={cn('ripple rounded-2xl px-4 py-2.5 font-semibold shadow-lg shadow-indigo-500/15 focus:outline-none focus:ring-4 focus:ring-indigo-200 disabled:opacity-60',className)} {...props}>{children}</motion.button>}
+import {
+  ButtonHTMLAttributes,
+  ReactNode,
+} from 'react';
+
+import { motion } from 'framer-motion';
+import { cn } from '../utils/classNames';
+
+type Props = {
+  children: ReactNode;
+  className?: string;
+} & Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'onAnimationStart' | 'onDrag' | 'onDragEnd' | 'onDragStart'
+>;
+
+export function Button({
+  className,
+  children,
+  ...props
+}: Props) {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.96 }}
+      whileHover={{ y: -2 }}
+      className={cn(
+        'ripple rounded-2xl px-4 py-2.5 font-semibold shadow-lg shadow-indigo-500/15 focus:outline-none focus:ring-4 focus:ring-indigo-200 disabled:opacity-60',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </motion.button>
+  );
+}

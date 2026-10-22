@@ -1,3 +1,39 @@
-import {motion} from 'framer-motion';import {Bell,CheckCircle2,Clock,Users} from 'lucide-react';import {useAppStore} from '../store/useAppStore';
-const icons={task:Bell,reminder:Clock,team:Users,done:CheckCircle2};
-export function NotificationsDropdown(){const ns=useAppStore(s=>s.notifications),mark=useAppStore(s=>s.markNotification);return <motion.div initial={{opacity:0,y:12,scale:.96}} animate={{opacity:1,y:0,scale:1}} className="glass absolute right-0 mt-3 w-80 rounded-3xl p-3"><h3 className="px-2 py-2 font-black">Notifications</h3>{ns.map(n=>{const Icon=icons[n.type];return <button key={n.id} onClick={()=>mark(n.id)} className="mb-2 flex w-full gap-3 rounded-2xl p-3 text-left hover:bg-white/70 dark:hover:bg-slate-800"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 text-white"><Icon size={18}/></span><span><b className="text-sm">{n.title}</b><p className="text-xs text-slate-500">{n.message}</p><small className="text-slate-400">{n.time}</small></span>{!n.read&&<span className="ml-auto mt-2 h-2 w-2 rounded-full bg-rose-500"/>}</button>})}</motion.div>}
+import { motion } from "framer-motion";
+import { Bell, CheckCircle2, Clock, Users } from "lucide-react";
+import { useAppStore } from "../store/useAppStore";
+const icons = { task: Bell, reminder: Clock, team: Users, done: CheckCircle2 };
+export function NotificationsDropdown() {
+  const ns = useAppStore((s) => s.notifications),
+    mark = useAppStore((s) => s.markNotification);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      className="glass absolute right-0 mt-3 w-80 rounded-3xl p-3"
+    >
+      <h3 className="px-2 py-2 font-black">Notifications</h3>
+      {ns.map((n) => {
+        const Icon = icons[n.type];
+        return (
+          <button
+            key={n.id}
+            onClick={() => mark(n.id)}
+            className="mb-2 flex w-full gap-3 rounded-2xl p-3 text-left hover:bg-white/70 dark:hover:bg-slate-800"
+          >
+            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 text-white">
+              <Icon size={18} />
+            </span>
+            <span>
+              <b className="text-sm">{n.title}</b>
+              <p className="text-xs text-slate-500">{n.message}</p>
+              <small className="text-slate-400">{n.time}</small>
+            </span>
+            {!n.read && (
+              <span className="ml-auto mt-2 h-2 w-2 rounded-full bg-rose-500" />
+            )}
+          </button>
+        );
+      })}
+    </motion.div>
+  );
+}

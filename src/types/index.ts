@@ -1,6 +1,6 @@
-export type Status = 'backlog' | 'planned' | 'progress' | 'review' | 'done';
-export type Priority = 'low' | 'medium' | 'high' | 'urgent';
-export type Theme = 'light' | 'dark';
+export type Status = "backlog" | "planned" | "progress" | "review" | "done";
+export type Priority = "low" | "medium" | "high" | "urgent";
+export type Theme = "light" | "dark";
 
 export interface Task {
   id: string;
@@ -35,7 +35,7 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'task' | 'reminder' | 'team' | 'done';
+  type: "task" | "reminder" | "team" | "done";
   read: boolean;
   time: string;
 }

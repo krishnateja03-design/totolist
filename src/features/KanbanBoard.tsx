@@ -7,72 +7,83 @@ import {
   useSensor,
   useSensors,
   DragOverlay,
-} from '@dnd-kit/core';
-import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
-import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+} from "@dnd-kit/core";
+import { useDraggable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
+import { motion } from "framer-motion";
+import { Plus } from "lucide-react";
 
-import { useState } from 'react';
-import { useAppStore } from '../store/useAppStore';
-import { Status, Task } from '../types';
-import { TaskCard } from '../components/TaskCard';
+import { useState } from "react";
+import { useAppStore } from "../store/useAppStore";
+import { Status, Task } from "../types";
+import { TaskCard } from "../components/TaskCard";
 
 function DraggableTask({ task }: { task: Task }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: task.id,
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: task.id,
+    });
 
   return (
     <div
       ref={setNodeRef}
       style={{
         transform: CSS.Translate.toString(transform),
-        touchAction: 'none',
+        touchAction: "none",
       }}
       {...listeners}
       {...attributes}
-      className={isDragging ? 'opacity-30' : ''}
+      className={isDragging ? "opacity-30" : ""}
     >
       <TaskCard task={task} />
     </div>
   );
 }
 
-function Column({ id, title, gradient }: { id: Status; title: string; gradient: string }) {
+function Column({
+  id,
+  title,
+  gradient,
+}: {
+  id: Status;
+  title: string;
+  gradient: string;
+}) {
   const { setNodeRef, isOver } = useDroppable({ id });
-  const allTasks = useAppStore(s => s.tasks);
-  const add = useAppStore(s => s.addTask);
+  const allTasks = useAppStore((s) => s.tasks);
+  const add = useAppStore((s) => s.addTask);
 
-  const tasks = allTasks.filter(t => t.status === id);
+  const tasks = allTasks.filter((t) => t.status === id);
 
   return (
     <section
       ref={setNodeRef}
       className={`min-h-[520px] rounded-[2rem] p-4 transition ${
         isOver
-          ? 'bg-indigo-100/70 ring-4 ring-indigo-300/60'
-          : 'bg-white/45 dark:bg-slate-900/40'
+          ? "bg-indigo-100/70 ring-4 ring-indigo-300/60"
+          : "bg-white/45 dark:bg-slate-900/40"
       }`}
     >
       <div className="mb-4 flex items-center justify-between">
-        <div className={`rounded-2xl bg-gradient-to-r ${gradient} px-4 py-2 text-sm font-black text-white shadow-lg`}>
+        <div
+          className={`rounded-2xl bg-gradient-to-r ${gradient} px-4 py-2 text-sm font-black text-white shadow-lg`}
+        >
           {title} · {tasks.length}
         </div>
 
         <button
           onClick={() =>
             add({
-              title: 'New task',
-              description: 'Created from board.',
+              title: "New task",
+              description: "Created from board.",
               status: id,
-              priority: 'medium',
-              assignees: ['KT'],
+              priority: "medium",
+              assignees: ["KT"],
               dueDate: new Date().toISOString(),
               comments: 0,
               attachments: 0,
               progress: 10,
-              tags: ['New'],
+              tags: ["New"],
             })
           }
           className="rounded-xl bg-white p-2 shadow"
@@ -88,7 +99,7 @@ function Column({ id, title, gradient }: { id: Status; title: string; gradient: 
           </div>
         )}
 
-        {tasks.map(task => (
+        {tasks.map((task) => (
           <DraggableTask key={task.id} task={task} />
         ))}
       </div>
@@ -97,20 +108,20 @@ function Column({ id, title, gradient }: { id: Status; title: string; gradient: 
 }
 
 export function KanbanBoard() {
-  const columns = useAppStore(s => s.columns);
-  const tasks = useAppStore(s => s.tasks);
-  const move = useAppStore(s => s.moveTask);
+  const columns = useAppStore((s) => s.columns);
+  const tasks = useAppStore((s) => s.tasks);
+  const move = useAppStore((s) => s.moveTask);
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
-    })
+    }),
   );
 
   function onDragStart(event: DragStartEvent) {
-    const task = tasks.find(t => t.id === String(event.active.id));
+    const task = tasks.find((t) => t.id === String(event.active.id));
     setActiveTask(task ?? null);
   }
 
@@ -123,9 +134,13 @@ export function KanbanBoard() {
   }
 
   return (
-    <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+    <DndContext
+      sensors={sensors}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+    >
       <div className="thin-scroll grid gap-5 overflow-x-auto pb-4 xl:grid-cols-5">
-        {columns.map(column => (
+        {columns.map((column) => (
           <Column key={column.id} {...column} />
         ))}
       </div>

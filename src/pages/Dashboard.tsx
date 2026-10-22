@@ -1,42 +1,46 @@
-import { motion } from 'framer-motion';
-import type { LucideIcon } from 'lucide-react';
-import { CheckCircle2, Clock, Flame, Zap } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { motion } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
+import { CheckCircle2, Clock, Flame, Zap } from "lucide-react";
+import confetti from "canvas-confetti";
 
-import { useAppStore } from '../store/useAppStore';
-import { AnimatedCounter } from '../components/AnimatedCounter';
+import { useAppStore } from "../store/useAppStore";
+import { AnimatedCounter } from "../components/AnimatedCounter";
 
 const cardGrad = [
-  'from-indigo-500 to-violet-500',
-  'from-emerald-500 to-teal-500',
-  'from-cyan-500 to-blue-500',
-  'from-rose-500 to-pink-500',
+  "from-indigo-500 to-violet-500",
+  "from-emerald-500 to-teal-500",
+  "from-cyan-500 to-blue-500",
+  "from-rose-500 to-pink-500",
 ];
 
 export default function Dashboard() {
-  const tasks = useAppStore(s => s.tasks);
+  const tasks = useAppStore((s) => s.tasks);
 
-  const completed = tasks.filter(t => t.status === 'done').length;
-  const progress = tasks.filter(t => t.status === 'progress').length;
-  const overdue = tasks.filter(t => new Date(t.dueDate) < new Date() && t.status !== 'done').length;
+  const completed = tasks.filter((t) => t.status === "done").length;
+  const progress = tasks.filter((t) => t.status === "progress").length;
+  const overdue = tasks.filter(
+    (t) => new Date(t.dueDate) < new Date() && t.status !== "done",
+  ).length;
 
   const upcomingTasks = [...tasks]
-    .filter(t => t.status !== 'done')
-    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+    .filter((t) => t.status !== "done")
+    .sort(
+      (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
+    )
     .slice(0, 4);
 
   const recentTasks = tasks.slice(0, 4);
 
-  const urgentTasks = tasks.filter(t => t.priority === 'urgent').length;
-  const highTasks = tasks.filter(t => t.priority === 'high').length;
-  const mediumTasks = tasks.filter(t => t.priority === 'medium').length;
-  const lowTasks = tasks.filter(t => t.priority === 'low').length;
+  const urgentTasks = tasks.filter((t) => t.priority === "urgent").length;
+  const highTasks = tasks.filter((t) => t.priority === "high").length;
+  const mediumTasks = tasks.filter((t) => t.priority === "medium").length;
+  const lowTasks = tasks.filter((t) => t.priority === "low").length;
 
   const kpis: [string, number, LucideIcon][] = [
-    ['Total Tasks', tasks.length, Zap],
-    ['Completed', completed, CheckCircle2],
-    ['In Progress', progress, Clock],
-    ['Overdue', overdue, Flame],
+    ["Total Tasks", tasks.length, Zap],
+    ["Completed", completed, CheckCircle2],
+    ["In Progress", progress, Clock],
+    ["Overdue", overdue, Flame],
   ];
 
   return (
@@ -89,7 +93,9 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-bold text-white/70">Today Focus</p>
-                <h3 className="mt-1 text-2xl font-black text-white">Start simple</h3>
+                <h3 className="mt-1 text-2xl font-black text-white">
+                  Start simple
+                </h3>
               </div>
 
               <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-indigo-600 shadow-xl">
@@ -98,7 +104,11 @@ export default function Dashboard() {
             </div>
 
             <div className="mt-6 space-y-3">
-              {['Create first task', 'Move task to progress', 'Complete one priority item'].map((item, index) => (
+              {[
+                "Create first task",
+                "Move task to progress",
+                "Complete one priority item",
+              ].map((item, index) => (
                 <motion.div
                   key={item}
                   initial={{ opacity: 0, x: 18 }}
@@ -124,7 +134,10 @@ export default function Dashboard() {
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{
-                    width: tasks.length === 0 ? '12%' : `${Math.min(tasks.length * 18, 100)}%`,
+                    width:
+                      tasks.length === 0
+                        ? "12%"
+                        : `${Math.min(tasks.length * 18, 100)}%`,
                   }}
                   transition={{ duration: 0.8 }}
                   className="h-full rounded-full bg-white"
@@ -172,15 +185,24 @@ export default function Dashboard() {
 
           {tasks.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-center dark:bg-slate-800/60">
-              <p className="font-bold text-slate-600 dark:text-slate-300">No tasks yet</p>
-              <p className="mt-1 text-sm text-slate-500">Create your first task to start planning your day.</p>
+              <p className="font-bold text-slate-600 dark:text-slate-300">
+                No tasks yet
+              </p>
+              <p className="mt-1 text-sm text-slate-500">
+                Create your first task to start planning your day.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
-              {recentTasks.map(task => (
-                <div key={task.id} className="rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-slate-800/70">
+              {recentTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-slate-800/70"
+                >
                   <p className="font-bold">{task.title}</p>
-                  <p className="mt-1 text-sm capitalize text-slate-500">{task.priority} priority</p>
+                  <p className="mt-1 text-sm capitalize text-slate-500">
+                    {task.priority} priority
+                  </p>
                 </div>
               ))}
             </div>
@@ -192,19 +214,25 @@ export default function Dashboard() {
 
           {upcomingTasks.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-center dark:bg-slate-800/60">
-              <p className="font-bold text-slate-600 dark:text-slate-300">Nothing scheduled</p>
-              <p className="mt-1 text-sm text-slate-500">Tasks with due dates will appear here.</p>
+              <p className="font-bold text-slate-600 dark:text-slate-300">
+                Nothing scheduled
+              </p>
+              <p className="mt-1 text-sm text-slate-500">
+                Tasks with due dates will appear here.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
-              {upcomingTasks.map(task => (
+              {upcomingTasks.map((task) => (
                 <div
                   key={task.id}
                   className="flex items-center justify-between gap-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-slate-800/70"
                 >
                   <div>
                     <p className="font-bold">{task.title}</p>
-                    <p className="mt-1 text-xs capitalize text-slate-500">{task.status}</p>
+                    <p className="mt-1 text-xs capitalize text-slate-500">
+                      {task.status}
+                    </p>
                   </div>
 
                   <span className="rounded-xl bg-indigo-50 px-3 py-1 text-xs font-black text-indigo-600">
@@ -221,10 +249,10 @@ export default function Dashboard() {
 
           <div className="space-y-4">
             {[
-              ['Urgent', urgentTasks, 'bg-rose-500'],
-              ['High', highTasks, 'bg-amber-500'],
-              ['Medium', mediumTasks, 'bg-indigo-500'],
-              ['Low', lowTasks, 'bg-emerald-500'],
+              ["Urgent", urgentTasks, "bg-rose-500"],
+              ["High", highTasks, "bg-amber-500"],
+              ["Medium", mediumTasks, "bg-indigo-500"],
+              ["Low", lowTasks, "bg-emerald-500"],
             ].map(([label, value, color]) => (
               <div key={label as string}>
                 <div className="mb-2 flex items-center justify-between text-sm font-bold">
@@ -236,7 +264,10 @@ export default function Dashboard() {
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{
-                      width: tasks.length === 0 ? '0%' : `${Math.round(((value as number) / tasks.length) * 100)}%`,
+                      width:
+                        tasks.length === 0
+                          ? "0%"
+                          : `${Math.round(((value as number) / tasks.length) * 100)}%`,
                     }}
                     transition={{ duration: 0.7 }}
                     className={`h-full rounded-full ${color as string}`}
@@ -252,17 +283,26 @@ export default function Dashboard() {
 
           {recentTasks.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-center dark:bg-slate-800/60">
-              <p className="font-bold text-slate-600 dark:text-slate-300">No activity yet</p>
-              <p className="mt-1 text-sm text-slate-500">Your latest tasks will show here.</p>
+              <p className="font-bold text-slate-600 dark:text-slate-300">
+                No activity yet
+              </p>
+              <p className="mt-1 text-sm text-slate-500">
+                Your latest tasks will show here.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
-              {recentTasks.map(task => (
-                <div key={task.id} className="flex items-center gap-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-slate-800/70">
+              {recentTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="flex items-center gap-3 rounded-2xl bg-white/70 p-4 shadow-sm dark:bg-slate-800/70"
+                >
                   <span className="h-3 w-3 rounded-full bg-indigo-500" />
                   <div>
                     <p className="font-bold">{task.title}</p>
-                    <p className="mt-1 text-xs capitalize text-slate-500">{task.status}</p>
+                    <p className="mt-1 text-xs capitalize text-slate-500">
+                      {task.status}
+                    </p>
                   </div>
                 </div>
               ))}

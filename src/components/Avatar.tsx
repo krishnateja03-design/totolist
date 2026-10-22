@@ -1,1 +1,15 @@
-export function Avatar({name,gradient='from-indigo-500 to-violet-500'}:{name:string;gradient?:string}){return <div className={`grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br ${gradient} text-xs font-black text-white shadow-lg`}>{name}</div>}
+export function Avatar({
+  name,
+  gradient = 'from-indigo-500 to-violet-500',
+}: {
+  name: string;
+  gradient?: string;
+}) {
+  return (
+    <div
+      className={`grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br ${gradient} text-xs font-black text-white shadow-lg`}
+    >
+      {name}
+    </div>
+  );
+}

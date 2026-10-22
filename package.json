@@ -1,1 +1,31 @@
-{"scripts":{"dev":"vite","build":"tsc -b && vite build","preview":"vite preview"},"dependencies":{"@dnd-kit/core":"latest","@dnd-kit/sortable":"latest","@dnd-kit/utilities":"latest","@tailwindcss/vite":"latest","@vitejs/plugin-react":"latest","canvas-confetti":"latest","framer-motion":"latest","lucide-react":"latest","react":"latest","react-dom":"latest","react-router-dom":"latest","recharts":"latest","tailwindcss":"latest","typescript":"latest","vite":"latest","zustand":"latest"},"devDependencies":{"@types/react":"^19.2.17","@types/react-dom":"^19.2.3"}}
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\" \"*.{json,ts,html}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\" \"*.{json,ts,html}\""
+  },
+  "dependencies": {
+    "@dnd-kit/core": "latest",
+    "@dnd-kit/sortable": "latest",
+    "@dnd-kit/utilities": "latest",
+    "@tailwindcss/vite": "latest",
+    "@vitejs/plugin-react": "latest",
+    "canvas-confetti": "latest",
+    "framer-motion": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router-dom": "latest",
+    "recharts": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "zustand": "latest"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3"
+  }
+}

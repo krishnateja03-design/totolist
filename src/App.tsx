@@ -1,11 +1,11 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { AppLayout } from './layouts/AppLayout';
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { AppLayout } from "./layouts/AppLayout";
 
-import Dashboard from './pages/Dashboard';
-import Board from './pages/Board';
-import Tasks from './pages/Tasks';
-import Analytics from './pages/Analytics';
-import Settings from './pages/Settings';
+import Dashboard from "./pages/Dashboard";
+import Board from "./pages/Board";
+import Tasks from "./pages/Tasks";
+import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
 
 export default function App() {
   return (

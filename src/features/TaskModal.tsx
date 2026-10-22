@@ -1,9 +1,9 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '../components/Button';
-import { useAppStore } from '../store/useAppStore';
-import { Priority, Status } from '../types';
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
+import { useState } from "react";
+import { Button } from "../components/Button";
+import { useAppStore } from "../store/useAppStore";
+import { Priority, Status } from "../types";
 
 export function TaskModal({
   open,
@@ -12,27 +12,27 @@ export function TaskModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const addTask = useAppStore(s => s.addTask);
+  const addTask = useAppStore((s) => s.addTask);
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState<Priority>('medium');
-  const [status, setStatus] = useState<Status>('backlog');
-  const [assignees, setAssignees] = useState('KT');
-  const [dueDate, setDueDate] = useState('');
-  const [tags, setTags] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState<Priority>("medium");
+  const [status, setStatus] = useState<Status>("backlog");
+  const [assignees, setAssignees] = useState("KT");
+  const [dueDate, setDueDate] = useState("");
+  const [tags, setTags] = useState("");
   const [progress, setProgress] = useState(10);
   const [comments, setComments] = useState(0);
   const [attachments, setAttachments] = useState(0);
 
   function resetForm() {
-    setTitle('');
-    setDescription('');
-    setPriority('medium');
-    setStatus('backlog');
-    setAssignees('KT');
-    setDueDate('');
-    setTags('');
+    setTitle("");
+    setDescription("");
+    setPriority("medium");
+    setStatus("backlog");
+    setAssignees("KT");
+    setDueDate("");
+    setTags("");
     setProgress(10);
     setComments(0);
     setAttachments(0);
@@ -43,20 +43,22 @@ export function TaskModal({
 
     addTask({
       title: title.trim(),
-      description: description.trim() || 'No description provided.',
+      description: description.trim() || "No description provided.",
       status,
       priority,
       assignees: assignees
-        .split(',')
-        .map(a => a.trim())
+        .split(",")
+        .map((a) => a.trim())
         .filter(Boolean),
-      dueDate: dueDate ? new Date(dueDate).toISOString() : new Date().toISOString(),
+      dueDate: dueDate
+        ? new Date(dueDate).toISOString()
+        : new Date().toISOString(),
       comments,
       attachments,
       progress,
       tags: tags
-        .split(',')
-        .map(t => t.trim())
+        .split(",")
+        .map((t) => t.trim())
         .filter(Boolean),
     });
 
@@ -94,14 +96,14 @@ export function TaskModal({
             <div className="space-y-4">
               <input
                 value={title}
-                onChange={e => setTitle(e.target.value)}
+                onChange={(e) => setTitle(e.target.value)}
                 placeholder="Task title"
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-200"
               />
 
               <textarea
                 value={description}
-                onChange={e => setDescription(e.target.value)}
+                onChange={(e) => setDescription(e.target.value)}
                 placeholder="Task description"
                 rows={4}
                 className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-200"
@@ -110,19 +112,19 @@ export function TaskModal({
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <select
                   value={status}
-                  onChange={e => setStatus(e.target.value as Status)}
+                  onChange={(e) => setStatus(e.target.value as Status)}
                   className="rounded-2xl border border-slate-200 p-3"
                 >
                   <option value="backlog">Backlog</option>
                   <option value="planned">Planned</option>
-                  <option value="in-progress">In Progress</option>
+                  <option value="progress">In Progress</option>
                   <option value="review">Review</option>
                   <option value="done">Done</option>
                 </select>
 
                 <select
                   value={priority}
-                  onChange={e => setPriority(e.target.value as Priority)}
+                  onChange={(e) => setPriority(e.target.value as Priority)}
                   className="rounded-2xl border border-slate-200 p-3"
                 >
                   <option value="low">Low</option>
@@ -134,7 +136,7 @@ export function TaskModal({
 
               <input
                 value={assignees}
-                onChange={e => setAssignees(e.target.value)}
+                onChange={(e) => setAssignees(e.target.value)}
                 placeholder="Assignees, comma separated e.g. KT, AR"
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-200"
               />
@@ -142,13 +144,13 @@ export function TaskModal({
               <input
                 type="date"
                 value={dueDate}
-                onChange={e => setDueDate(e.target.value)}
+                onChange={(e) => setDueDate(e.target.value)}
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-200"
               />
 
               <input
                 value={tags}
-                onChange={e => setTags(e.target.value)}
+                onChange={(e) => setTags(e.target.value)}
                 placeholder="Tags, comma separated e.g. Design, Bug, New"
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-200"
               />
@@ -162,7 +164,7 @@ export function TaskModal({
                   min="0"
                   max="100"
                   value={progress}
-                  onChange={e => setProgress(Number(e.target.value))}
+                  onChange={(e) => setProgress(Number(e.target.value))}
                   className="w-full"
                 />
               </div>
@@ -172,7 +174,7 @@ export function TaskModal({
                   type="number"
                   min="0"
                   value={comments}
-                  onChange={e => setComments(Number(e.target.value))}
+                  onChange={(e) => setComments(Number(e.target.value))}
                   placeholder="Comments"
                   className="rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-200"
                 />
@@ -181,7 +183,7 @@ export function TaskModal({
                   type="number"
                   min="0"
                   value={attachments}
-                  onChange={e => setAttachments(Number(e.target.value))}
+                  onChange={(e) => setAttachments(Number(e.target.value))}
                   placeholder="Attachments"
                   className="rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-4 focus:ring-indigo-200"
                 />

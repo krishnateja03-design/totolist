@@ -1,2 +1,2 @@
 /// <reference types="vite/client" />
-declare module 'canvas-confetti';
+declare module "canvas-confetti";
