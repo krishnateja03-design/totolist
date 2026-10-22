@@ -6,6 +6,7 @@ import Board from "./pages/Board";
 import Tasks from "./pages/Tasks";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import Team from "./pages/Team";
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
           <Route index element={<Dashboard />} />
           <Route path="board" element={<Board />} />
           <Route path="tasks" element={<Tasks />} />
+          <Route path="team" element={<Team />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
         </Route>

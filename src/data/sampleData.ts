@@ -1,19 +1,20 @@
 import { Column, Goal, Notification, Task, TeamMember } from "../types";
+
 export const columns: Column[] = [
   { id: "backlog", title: "Backlog", gradient: "from-slate-400 to-slate-600" },
-  {
-    id: "planned",
-    title: "Planned",
-    gradient: "from-indigo-500 to-violet-500",
-  },
-  {
-    id: "progress",
-    title: "In Progress",
-    gradient: "from-cyan-500 to-blue-500",
-  },
+  { id: "planned", title: "Planned", gradient: "from-indigo-500 to-violet-500" },
+  { id: "progress", title: "In Progress", gradient: "from-cyan-500 to-blue-500" },
   { id: "review", title: "Review", gradient: "from-amber-500 to-orange-500" },
   { id: "done", title: "Done", gradient: "from-emerald-500 to-teal-500" },
 ];
+
+const now = new Date();
+const addDays = (days: number) => {
+  const d = new Date(now);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+};
+
 export const tasks: Task[] = [
   {
     id: "t1",
@@ -22,7 +23,7 @@ export const tasks: Task[] = [
     status: "progress",
     priority: "urgent",
     assignees: ["KT", "AM"],
-    dueDate: "2026-06-25",
+    dueDate: addDays(2),
     comments: 12,
     attachments: 4,
     progress: 72,
@@ -31,11 +32,11 @@ export const tasks: Task[] = [
   {
     id: "t2",
     title: "Calendar timeline redesign",
-    description: "Create colorful week/day interactions.",
+    description: "Create colorful week and day interactions.",
     status: "planned",
     priority: "high",
     assignees: ["SK"],
-    dueDate: "2026-06-27",
+    dueDate: addDays(4),
     comments: 8,
     attachments: 2,
     progress: 38,
@@ -48,7 +49,7 @@ export const tasks: Task[] = [
     status: "review",
     priority: "medium",
     assignees: ["NR", "AM"],
-    dueDate: "2026-06-24",
+    dueDate: addDays(1),
     comments: 5,
     attachments: 1,
     progress: 88,
@@ -61,7 +62,7 @@ export const tasks: Task[] = [
     status: "backlog",
     priority: "medium",
     assignees: ["KT"],
-    dueDate: "2026-07-02",
+    dueDate: addDays(7),
     comments: 3,
     attachments: 0,
     progress: 12,
@@ -74,7 +75,7 @@ export const tasks: Task[] = [
     status: "done",
     priority: "low",
     assignees: ["SK", "NR"],
-    dueDate: "2026-06-20",
+    dueDate: addDays(-2),
     comments: 18,
     attachments: 6,
     progress: 100,
@@ -87,13 +88,14 @@ export const tasks: Task[] = [
     status: "planned",
     priority: "high",
     assignees: ["AM"],
-    dueDate: "2026-06-30",
+    dueDate: addDays(5),
     comments: 4,
     attachments: 3,
     progress: 44,
     tags: ["Reports"],
   },
 ];
+
 export const notifications: Notification[] = [
   {
     id: "n1",
@@ -128,6 +130,7 @@ export const notifications: Notification[] = [
     time: "3h ago",
   },
 ];
+
 export const goals: Goal[] = [
   {
     id: "g1",
@@ -154,6 +157,7 @@ export const goals: Goal[] = [
     gradient: "from-rose-500 to-pink-500",
   },
 ];
+
 export const team: TeamMember[] = [
   {
     id: "m1",
@@ -192,6 +196,7 @@ export const team: TeamMember[] = [
     ring: "from-amber-500 to-orange-500",
   },
 ];
+
 export const chartData = [
   { name: "Mon", tasks: 12, score: 74, done: 8 },
   { name: "Tue", tasks: 18, score: 78, done: 11 },
