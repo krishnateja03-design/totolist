@@ -1,3 +1,27 @@
+/**
+ * @file pages/Tasks.tsx
+ * @description All Work Items table view with filtering, search, pagination, and bulk actions.
+ *
+ * This page shows all tasks across all projects (or filtered by project) in a
+ * sortable, filterable table layout. It is designed for power users who need to
+ * manage large volumes of tasks efficiently.
+ *
+ * Features:
+ *   - Free-text search across task title, description, and tags
+ *   - Status filter (All / Backlog / Planned / In Progress / Review / Done)
+ *   - Project filter (All / individual project)
+ *   - Multi-row checkbox selection with bulk actions:
+ *       a) Bulk Delete   – removes all selected tasks permanently
+ *       b) Bulk Mark Done – moves all selected tasks to "done" status with 100% progress
+ *   - Paginated table (ITEMS_PER_PAGE rows per page) with Previous/Next navigation
+ *   - Per-row inline Mark Done / Delete actions
+ *   - "+ New Task" button opens the TaskModal
+ *
+ * Data flow:
+ *   - Reads tasks and projects from the global Zustand store
+ *   - Filtering is memoized via `useMemo` to avoid unnecessary re-renders
+ *   - Pagination is client-side (all data in memory)
+ */
 import { useMemo, useState } from "react";
 import {
   Search,
@@ -14,21 +38,39 @@ import { priorityStyles } from "../utils/classNames";
 import { TaskModal } from "../features/TaskModal";
 import { Button } from "../components/Button";
 
+/** Number of task rows shown per page in the paginated table */
 const ITEMS_PER_PAGE = 8;
 
 export default function Tasks() {
-  const tasks = useAppStore((s) => s.tasks);
-  const projects = useAppStore((s) => s.projects);
-  const del = useAppStore((s) => s.deleteTask);
-  const updateTask = useAppStore((s) => s.updateTask);
+  // ─── Store State & Actions ─────────────────────────────────────────────
+  const tasks = useAppStore((s) => s.tasks);         // All tasks (unfiltered)
+  const projects = useAppStore((s) => s.projects);   // Used to resolve project names from IDs
+  const del = useAppStore((s) => s.deleteTask);      // Action to delete one task by ID
+  const updateTask = useAppStore((s) => s.updateTask); // Action to update task (used for bulk mark done)
 
+  // ─── Filter & UI State ────────────────────────────────────────────────
+  /** The current search query typed in the search box (matches title, description, tags) */
   const [q, setQ] = useState("");
+  /** Status filter value – "all" or a specific Status string (backlog, planned, progress, review, done) */
   const [status, setStatus] = useState("all");
+  /** Project filter value – "all" or a specific project ID */
   const [projectIdFilter, setProjectIdFilter] = useState("all");
+  /** Array of task IDs that the user has checked via checkbox (for bulk operations) */
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  /** The currently active page number (1-indexed) */
   const [page, setPage] = useState(1);
+  /** Controls visibility of the "Create Task" modal */
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
+  // ─── Filtered & Paginated Data ────────────────────────────────────────
+
+  /**
+   * Memoized filtered task list. Re-computes only when tasks, query, status, or project filter changes.
+   * All three filter conditions must pass (AND logic):
+   *   1. matchStatus:  status === "all" OR task.status matches the selected filter
+   *   2. matchProject: projectIdFilter === "all" OR task.projectId matches the selected project
+   *   3. matchQuery:   query is found in the title, description, OR any tag
+   */
   const filteredTasks = useMemo(
     () =>
       tasks.filter((t) => {
@@ -45,45 +87,73 @@ export default function Tasks() {
     [tasks, q, status, projectIdFilter],
   );
 
+  /** Total number of pages based on filtered results. Minimum of 1 to avoid division issues. */
   const totalPages = Math.max(1, Math.ceil(filteredTasks.length / ITEMS_PER_PAGE));
+  /** Clamp current page to valid range (e.g., if filter reduces total pages below current page) */
   const currentPage = Math.min(page, totalPages);
 
+  /**
+   * The slice of filteredTasks to show on the current page.
+   * Memoized to avoid recomputing on every render.
+   */
   const rows = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredTasks.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredTasks, currentPage]);
 
+  /** True when every visible row on the current page is checked – drives the header checkbox state */
   const allVisibleSelected =
     rows.length > 0 && rows.every((t) => selectedIds.includes(t.id));
 
+  /**
+   * Toggles selection of ALL visible rows on the current page.
+   * If all are selected → deselects them. Otherwise → adds all to selection.
+   * Uses Set to avoid duplicates when merging with pre-existing selections from other pages.
+   */
   function toggleSelectAll() {
     if (allVisibleSelected) {
+      // Deselect all visible rows; keep selections from other pages intact
       setSelectedIds((prev) => prev.filter((id) => !rows.some((r) => r.id === id)));
     } else {
       const visibleIds = rows.map((r) => r.id);
+      // Merge visible IDs with any already-selected IDs from other pages
       setSelectedIds((prev) => Array.from(new Set([...prev, ...visibleIds])));
     }
   }
 
+  /**
+   * Toggles selection of a single task row.
+   * @param id - The task ID to toggle in selectedIds
+   */
   function toggleSelect(id: string) {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   }
 
+  /**
+   * Bulk deletes all currently selected tasks.
+   * Dispatches deleteTask for each selected ID, then clears the selection.
+   */
   function handleBulkDelete() {
     selectedIds.forEach((id) => del(id));
-    setSelectedIds([]);
+    setSelectedIds([]); // Clear selection after deletion
   }
 
+  /**
+   * Bulk marks all selected tasks as "done" with 100% progress.
+   * Uses updateTask (full replace) rather than moveTask to also update the progress field.
+   * Clears selection after the operation.
+   */
   function handleBulkMarkDone() {
     selectedIds.forEach((id) => {
       const task = tasks.find((t) => t.id === id);
       if (task) {
+        // Spread the existing task and override status + progress
         updateTask({ ...task, status: "done", progress: 100 });
       }
     });
-    setSelectedIds([]);
+    setSelectedIds([]); // Clear selection after marking done
   }
 
   return (

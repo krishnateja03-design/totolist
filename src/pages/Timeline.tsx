@@ -1,3 +1,30 @@
+/**
+ * @file pages/Timeline.tsx
+ * @description Gantt-style delivery schedule page showing task duration bars and milestones.
+ *
+ * This page visualizes when tasks are scheduled relative to a scrollable date window.
+ * It is NOT a true SVG Gantt – it uses CSS percentage positioning to render
+ * horizontal bars inside a table-like grid of day columns.
+ *
+ * Features:
+ *   - 14-day or 30-day view toggle (current date is always included, 2 days of past context)
+ *   - Project filter dropdown (all projects or a single project)
+ *   - Task bars positioned using `getTaskPlacement()` – percentage-based left/width
+ *   - Milestone markers from the selected project's milestones array
+ *   - Priority badge on each task row
+ *   - "+" button to add a new task directly from this page
+ *
+ * Task Bar Placement:
+ *   - If a task has a `startDate`, the bar spans from startDate to dueDate
+ *   - If no startDate, a default 3-day duration is assumed (dueDate - 3 days)
+ *   - Bars are clamped to the visible window so they never overflow the grid
+ *   - A minimum width of 8% ensures even 1-day tasks are visible
+ *
+ * Data flow:
+ *   - All tasks and projects read from Zustand store
+ *   - `filteredTasks` memoized to avoid refiltering on every date scroll
+ *   - `timelineDates` memoized based on the selected span (14 or 30 days)
+ */
 import { motion } from "framer-motion";
 import {
   Calendar as CalendarIcon,
@@ -19,16 +46,28 @@ import { priorityStyles } from "../utils/classNames";
 export default function Timeline() {
   const tasks = useAppStore((s) => s.tasks);
   const projects = useAppStore((s) => s.projects);
+
+  /** Project scope filter: "all" shows all tasks; a project ID shows only that project's tasks */
   const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
+  /** Controls the "Add Task" modal visibility */
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  /**
+   * The number of days shown in the timeline window.
+   * "14" = 2-week view (default), "30" = monthly view.
+   */
   const [timelineSpan, setTimelineSpan] = useState<"14" | "30">("14");
 
-  // Generate date columns for the timeline
+  /** Parsed integer version of timelineSpan for use in date math */
   const daysCount = Number(timelineSpan);
+  /**
+   * Generates the array of Date objects that form the column headers of the timeline.
+   * Starts 2 days in the past so users can see recently completed tasks in context.
+   * Memoized because date generation is only needed when `daysCount` changes (span toggle).
+   */
   const timelineDates = useMemo(() => {
     const list: Date[] = [];
     const base = new Date();
-    base.setDate(base.getDate() - 2); // Start 2 days in the past
+    base.setDate(base.getDate() - 2); // Offset back 2 days for historical context
     for (let i = 0; i < daysCount; i++) {
       const d = new Date(base);
       d.setDate(base.getDate() + i);
@@ -37,42 +76,65 @@ export default function Timeline() {
     return list;
   }, [daysCount]);
 
+  /** The first date in the visible window (used as the left boundary for bar placement) */
   const startDate = timelineDates[0];
+  /** The last date in the visible window (used as the right boundary for bar placement) */
   const endDate = timelineDates[timelineDates.length - 1];
 
+  /**
+   * Memoized list of tasks filtered by the selected project.
+   * Returns all tasks when "all" is selected.
+   */
   const filteredTasks = useMemo(() => {
     if (selectedProjectId === "all") return tasks;
     return tasks.filter((t) => t.projectId === selectedProjectId);
   }, [tasks, selectedProjectId]);
 
-  // Calculate task bar position and width relative to the timeline window
+  /**
+   * Calculates the CSS left% and width% for a task bar within the timeline window.
+   *
+   * Algorithm:
+   *   1. Determine the task's start timestamp:
+   *      - If `taskStartDate` is provided, use it
+   *      - Otherwise, default to 3 days before `taskDueDate`
+   *   2. Clamp both start and end to the visible window boundaries
+   *   3. Convert to percentage positions relative to the window's total duration
+   *   4. Apply minimum width of 8% so tiny tasks are still visible
+   *   5. Mark as `isOffscreen` if the task falls entirely outside the visible range
+   *
+   * @param taskDueDate   - ISO date string of the task deadline
+   * @param taskStartDate - Optional ISO date string of when work begins
+   * @returns Object with `leftPercent`, `widthPercent`, and `isOffscreen` flag
+   */
   function getTaskPlacement(taskDueDate: string, taskStartDate?: string) {
     const due = new Date(taskDueDate).getTime();
     const start = taskStartDate
       ? new Date(taskStartDate).getTime()
-      : due - 3 * 24 * 60 * 60 * 1000; // default 3 days duration
+      : due - 3 * 24 * 60 * 60 * 1000; // default 3 days duration if no startDate
 
     const windowStart = startDate.getTime();
     const windowEnd = endDate.getTime();
     const totalDuration = windowEnd - windowStart;
 
+    // Clamp task bounds to the visible window to prevent overflow
     const clampedStart = Math.max(windowStart, start);
     const clampedEnd = Math.min(windowEnd, due);
 
     if (clampedEnd < windowStart || clampedStart > windowEnd) {
-      // Offscreen
+      // Task is completely outside the visible date range – render offscreen placeholder
       return { leftPercent: 5, widthPercent: 15, isOffscreen: true };
     }
 
+    // Calculate percentage position within the window
     const leftPercent = ((clampedStart - windowStart) / totalDuration) * 100;
     const widthPercent = Math.max(
-      8,
+      8, // Minimum 8% width so tiny tasks don't disappear
       ((clampedEnd - clampedStart) / totalDuration) * 100,
     );
 
     return {
-      leftPercent: Math.min(90, Math.max(1, leftPercent)),
-      widthPercent: Math.min(95 - leftPercent, widthPercent),
+      leftPercent: Math.min(90, Math.max(1, leftPercent)), // clamp to 1–90%
+      widthPercent: Math.min(95 - leftPercent, widthPercent), // prevent overflow
       isOffscreen: false,
     };
   }

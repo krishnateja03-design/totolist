@@ -1,3 +1,26 @@
+/**
+ * @file pages/Dashboard.tsx
+ * @description Executive Project Intelligence Dashboard – the home page of Nexus PM.
+ *
+ * This page is the first thing users see after login. It provides:
+ *
+ *   1. Hero Banner          – Headline KPIs (projects, tasks, hours, overdue) with an animated
+ *                             budget burn gauge card and quick action buttons (Launch Project, Log Work Item)
+ *   2. KPI Cards Row        – Four animated counter cards for high-level portfolio metrics
+ *   3. Upcoming Tasks Panel – Next 4 non-done tasks sorted by due date closest first
+ *   4. Project Spotlights   – Cards showing each project's health, milestone count, and budget burn
+ *   5. Milestones Timeline  – All milestones across all projects in a compact checklist
+ *
+ * Data flow:
+ *   - All data is read from `useAppStore` (Zustand global store)
+ *   - All computed metrics (totals, filters, sorts) are derived directly in the component
+ *   - No local state except modal open/close flags
+ *
+ * When empty (fresh install):
+ *   - The hero banner still renders with a "Get started" call to action
+ *   - KPI cards show 0 for all metrics
+ *   - Empty state messages guide the user to create their first project and task
+ */
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -23,43 +46,68 @@ import { ProjectModal } from "../features/ProjectModal";
 import { TaskModal } from "../features/TaskModal";
 import { Button } from "../components/Button";
 
+/**
+ * Gradient class strings for the 4 KPI cards (one per card in order).
+ * Used as Tailwind gradient utilities on the card header accent strip.
+ */
 const cardGrad = [
-  "from-indigo-500 to-violet-500",
-  "from-emerald-500 to-teal-500",
-  "from-cyan-500 to-blue-500",
-  "from-amber-500 to-rose-500",
+  "from-indigo-500 to-violet-500",  // Active Projects card
+  "from-emerald-500 to-teal-500",   // Tasks Delivered card
+  "from-cyan-500 to-blue-500",      // Hours Logged card
+  "from-amber-500 to-rose-500",     // Overdue Tasks card (warm/alert colors)
 ];
 
 export default function Dashboard() {
-  const tasks = useAppStore((s) => s.tasks);
-  const projects = useAppStore((s) => s.projects);
+  // ─── Global State ─────────────────────────────────────────────────────
+  const tasks = useAppStore((s) => s.tasks);       // All tasks across all projects
+  const projects = useAppStore((s) => s.projects); // All projects in the portfolio
+
+  // ─── Modal State ──────────────────────────────────────────────────────
+  /** Controls the "Create Project" modal (also accessible from sidebar and topbar) */
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  /** Controls the "Create Task" modal (also accessible from sidebar and topbar) */
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
+  // ─── Computed Metrics ─────────────────────────────────────────────────
+  /** Count of tasks that have reached the "done" stage */
   const completed = tasks.filter((t) => t.status === "done").length;
+  /** Count of tasks currently being actively worked on ("In Progress" column) */
   const progress = tasks.filter((t) => t.status === "progress").length;
+  /**
+   * Count of tasks whose dueDate is in the past AND not yet completed.
+   * These are highlighted in red in the KPI card to trigger urgency.
+   */
   const overdue = tasks.filter(
     (t) => new Date(t.dueDate) < new Date() && t.status !== "done",
   ).length;
 
+  /** Sum of all budget `spent` values across every project in USD */
   const totalBudgetSpent = projects.reduce(
     (acc, p) => acc + (p.budget?.spent || 0),
     0,
   );
+  /** Sum of all budget `allocated` values across every project in USD */
   const totalBudget = projects.reduce(
     (acc, p) => acc + (p.budget?.allocated || 0),
     0,
   );
 
+  /** Total hours logged against all tasks (shown in the Hours Logged KPI card) */
   const totalHoursLogged = tasks.reduce(
     (acc, t) => acc + (t.loggedHours || 0),
     0,
   );
+  /** Total hours estimated across all tasks (shown as subtitle in the KPI card) */
   const totalHoursEstimated = tasks.reduce(
     (acc, t) => acc + (t.estimatedHours || 0),
     0,
   );
 
+  /**
+   * The next 4 most urgent tasks (sorted by due date ascending).
+   * Excludes completed tasks. Shown in the "Upcoming Tasks" panel.
+   * Limited to 4 items to keep the dashboard scannable.
+   */
   const upcomingTasks = [...tasks]
     .filter((t) => t.status !== "done")
     .sort(
@@ -67,6 +115,11 @@ export default function Dashboard() {
     )
     .slice(0, 4);
 
+  /**
+   * KPI card data tuples: [title, value, icon, subtitle].
+   * Rendered as four animated counter cards in the KPI row section.
+   * The subtitle is computed dynamically (e.g., velocity % or estimated hours).
+   */
   const kpis: [string, number, LucideIcon, string][] = [
     ["Active Projects", projects.length, FolderKanban, "initiatives tracked"],
     ["Tasks Delivered", completed, CheckCircle2, `${Math.round((completed / (tasks.length || 1)) * 100)}% sprint velocity`],

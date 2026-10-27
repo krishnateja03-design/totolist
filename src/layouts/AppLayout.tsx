@@ -1,3 +1,27 @@
+/**
+ * @file layouts/AppLayout.tsx
+ * @description The root layout wrapper for all authenticated pages in Nexus PM.
+ *
+ * Responsibilities:
+ *   1. Renders the collapsible Sidebar navigation (desktop: always visible, mobile: slide-in drawer)
+ *   2. Renders the sticky top Topbar with notification bell, theme toggle, and quick-add buttons
+ *   3. Wraps the active page content in a Framer Motion fade/slide transition
+ *   4. Hosts the TaskModal and ProjectModal portals – these are app-level overlays
+ *      triggered from both the Topbar buttons AND from individual page components via local state
+ *
+ * Dark Mode:
+ *   - Controlled via `useAppStore.theme` and `useAppStore.toggleTheme()`
+ *   - The "dark" class is applied to `<html>` so Tailwind's dark: variants activate globally
+ *   - Persisted to localStorage via Zustand persist middleware
+ *
+ * Routing:
+ *   - Uses React Router v6 `<Outlet />` to render the active child route
+ *   - The `routeTitles` map drives the dynamic page title/subtitle in the Topbar
+ *
+ * Sidebar Project Switcher:
+ *   - A <select> dropdown lets users scope all views to a single project
+ *   - Setting selectedProjectId to "all" removes the filter (global view)
+ */
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -27,6 +51,11 @@ import { NotificationsDropdown } from "../features/NotificationsDropdown";
 import { TaskModal } from "../features/TaskModal";
 import { ProjectModal } from "../features/ProjectModal";
 
+/**
+ * Navigation links rendered in the Sidebar.
+ * Each entry is a tuple of [route path, display label, Lucide icon component].
+ * The active link is highlighted with a gradient pill via Framer Motion `layoutId`.
+ */
 const links = [
   ["/", "Dashboard", Home],
   ["/projects", "Projects", FolderKanban],
@@ -38,6 +67,11 @@ const links = [
   ["/settings", "Settings", Settings],
 ] as const;
 
+/**
+ * Maps each route pathname to the Topbar title and subtitle.
+ * For dynamic routes (e.g., /projects/:id), a fallback is computed in AppLayout.
+ * These strings are shown in the sticky header above the page content.
+ */
 const routeTitles: Record<string, { title: string; subtitle: string }> = {
   "/": { title: "Executive Dashboard", subtitle: "Portfolio metrics & delivery velocity" },
   "/projects": { title: "Projects Hub", subtitle: "Strategic initiatives & roadmaps" },
@@ -49,6 +83,18 @@ const routeTitles: Record<string, { title: string; subtitle: string }> = {
   "/settings": { title: "Platform Settings", subtitle: "Preferences, theme & workspace options" },
 };
 
+/**
+ * The collapsible left sidebar containing navigation, project switcher, and quick actions.
+ *
+ * On desktop (lg+): Always visible as a sticky sidebar.
+ * On mobile (<lg): Hidden off-screen (left: -80) and slides in via an `open` prop.
+ *                   A semi-transparent backdrop overlay closes it when tapped.
+ *
+ * @param open         - Whether the mobile drawer is open
+ * @param onClose      - Callback to close the mobile drawer (called on backdrop click, nav link click, X button)
+ * @param onNewTask    - Opens the global TaskModal (wired to the "New Work Item" button)
+ * @param onNewProject - Opens the global ProjectModal (wired to the "+ Project" link)
+ */
 function Sidebar({
   open,
   onClose,
@@ -192,14 +238,32 @@ function Sidebar({
   );
 }
 
+/**
+ * Root layout component wrapping all authenticated pages.
+ *
+ * Owns all global UI state that overlays the entire app:
+ *   - `mobile`         → Whether the mobile sidebar drawer is open
+ *   - `notif`          → Whether the notifications dropdown is open
+ *   - `taskModalOpen`  → Whether the TaskModal (create task) is visible
+ *   - `projectModalOpen` → Whether the ProjectModal (create project) is visible
+ *
+ * The `<Outlet />` renders whichever page component React Router has matched.
+ * The Framer Motion wrapper around `<Outlet />` provides a page-to-page fade+slide transition.
+ */
 export function AppLayout() {
+  /** Controls visibility of the mobile slide-in sidebar drawer */
   const [mobile, setMobile] = useState(false);
+  /** Controls visibility of the notification bell dropdown */
   const [notif, setNotif] = useState(false);
+  /** Controls visibility of the task creation modal */
   const [taskModalOpen, setTaskModalOpen] = useState(false);
+  /** Controls visibility of the project creation modal */
   const [projectModalOpen, setProjectModalOpen] = useState(false);
 
+  // Read theme and toggle action from global store
   const theme = useAppStore((s) => s.theme);
   const toggle = useAppStore((s) => s.toggleTheme);
+  // Notifications used to show unread count badge on the bell button
   const notifications = useAppStore((s) => s.notifications);
 
   const location = useLocation();
