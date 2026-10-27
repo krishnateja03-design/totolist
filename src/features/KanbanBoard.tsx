@@ -11,8 +11,7 @@ import {
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
-
+import { Plus, Filter } from "lucide-react";
 import { useState } from "react";
 import { useAppStore } from "../store/useAppStore";
 import { Status, Task } from "../types";
@@ -33,7 +32,7 @@ function DraggableTask({ task }: { task: Task }) {
       }}
       {...listeners}
       {...attributes}
-      className={isDragging ? "opacity-30" : ""}
+      className={isDragging ? "opacity-30 cursor-grabbing" : "cursor-grab"}
     >
       <TaskCard task={task} />
     </div>
@@ -44,58 +43,54 @@ function Column({
   id,
   title,
   gradient,
+  selectedProjectId,
+  onOpenTaskModal,
 }: {
   id: Status;
   title: string;
   gradient: string;
+  selectedProjectId: string;
+  onOpenTaskModal: (status: Status) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   const allTasks = useAppStore((s) => s.tasks);
-  const add = useAppStore((s) => s.addTask);
 
-  const tasks = allTasks.filter((t) => t.status === id);
+  const tasks = allTasks
+    .filter((t) => (selectedProjectId === "all" ? true : t.projectId === selectedProjectId))
+    .filter((t) => t.status === id);
 
   return (
     <section
       ref={setNodeRef}
-      className={`min-h-[520px] rounded-[2rem] p-4 transition ${
+      className={`min-h-[560px] rounded-3xl p-4 transition-all duration-200 border border-black/5 dark:border-white/10 ${
         isOver
-          ? "bg-indigo-100/70 ring-4 ring-indigo-300/60"
-          : "bg-white/45 dark:bg-slate-900/40"
+          ? "bg-indigo-100/70 dark:bg-indigo-950/40 ring-4 ring-indigo-400/50"
+          : "bg-white/50 dark:bg-slate-900/50 backdrop-blur-md"
       }`}
     >
       <div className="mb-4 flex items-center justify-between">
         <div
-          className={`rounded-2xl bg-gradient-to-r ${gradient} px-4 py-2 text-sm font-black text-white shadow-lg`}
+          className={`rounded-2xl bg-gradient-to-r ${gradient} px-3.5 py-1.5 text-xs font-black text-white shadow-md flex items-center gap-1.5`}
         >
-          {title} · {tasks.length}
+          <span>{title}</span>
+          <span className="rounded-full bg-white/20 px-1.5 py-0.2 text-[10px]">
+            {tasks.length}
+          </span>
         </div>
 
         <button
-          onClick={() =>
-            add({
-              title: "New task",
-              description: "Created from board.",
-              status: id,
-              priority: "medium",
-              assignees: ["KT"],
-              dueDate: new Date().toISOString(),
-              comments: 0,
-              attachments: 0,
-              progress: 10,
-              tags: ["New"],
-            })
-          }
-          className="rounded-xl bg-white p-2 shadow"
+          onClick={() => onOpenTaskModal(id)}
+          className="rounded-xl p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
+          title={`Add item to ${title}`}
         >
           <Plus size={16} />
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3.5">
         {tasks.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm font-bold text-slate-400">
-            Drop tasks here
+          <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center text-xs font-semibold text-slate-400">
+            Drop work items here
           </div>
         )}
 
@@ -107,7 +102,13 @@ function Column({
   );
 }
 
-export function KanbanBoard() {
+export function KanbanBoard({
+  selectedProjectId,
+  onOpenTaskModal,
+}: {
+  selectedProjectId: string;
+  onOpenTaskModal: (status: Status) => void;
+}) {
   const columns = useAppStore((s) => s.columns);
   const tasks = useAppStore((s) => s.tasks);
   const move = useAppStore((s) => s.moveTask);
@@ -129,7 +130,6 @@ export function KanbanBoard() {
     if (event.over) {
       move(String(event.active.id), event.over.id as Status);
     }
-
     setActiveTask(null);
   }
 
@@ -139,9 +139,14 @@ export function KanbanBoard() {
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >
-      <div className="thin-scroll grid gap-5 overflow-x-auto pb-4 xl:grid-cols-5">
+      <div className="thin-scroll grid gap-4 overflow-x-auto pb-4 xl:grid-cols-5">
         {columns.map((column) => (
-          <Column key={column.id} {...column} />
+          <Column
+            key={column.id}
+            {...column}
+            selectedProjectId={selectedProjectId}
+            onOpenTaskModal={onOpenTaskModal}
+          />
         ))}
       </div>
 
@@ -150,7 +155,7 @@ export function KanbanBoard() {
           <motion.div
             initial={{ scale: 1 }}
             animate={{ scale: 1.04 }}
-            className="rotate-2 cursor-grabbing"
+            className="rotate-2 cursor-grabbing shadow-2xl"
           >
             <TaskCard task={activeTask} />
           </motion.div>

@@ -1,29 +1,48 @@
 import { useMemo, useState } from "react";
-import { Search, Trash2, CheckSquare, Square, CheckCircle2 } from "lucide-react";
+import {
+  Search,
+  Trash2,
+  CheckSquare,
+  Square,
+  CheckCircle2,
+  Folder,
+  Clock,
+  Plus,
+} from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { priorityStyles } from "../utils/classNames";
+import { TaskModal } from "../features/TaskModal";
+import { Button } from "../components/Button";
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 8;
 
 export default function Tasks() {
   const tasks = useAppStore((s) => s.tasks);
+  const projects = useAppStore((s) => s.projects);
   const del = useAppStore((s) => s.deleteTask);
   const updateTask = useAppStore((s) => s.updateTask);
 
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("all");
+  const [projectIdFilter, setProjectIdFilter] = useState("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
   const filteredTasks = useMemo(
     () =>
-      tasks.filter(
-        (t) =>
-          (status === "all" || t.status === status) &&
-          (t.title.toLowerCase().includes(q.toLowerCase()) ||
-            t.description.toLowerCase().includes(q.toLowerCase())),
-      ),
-    [tasks, q, status],
+      tasks.filter((t) => {
+        const matchStatus = status === "all" || t.status === status;
+        const matchProject =
+          projectIdFilter === "all" || t.projectId === projectIdFilter;
+        const matchQuery =
+          t.title.toLowerCase().includes(q.toLowerCase()) ||
+          t.description.toLowerCase().includes(q.toLowerCase()) ||
+          t.tags.some((tag) => tag.toLowerCase().includes(q.toLowerCase()));
+
+        return matchStatus && matchProject && matchQuery;
+      }),
+    [tasks, q, status, projectIdFilter],
   );
 
   const totalPages = Math.max(1, Math.ceil(filteredTasks.length / ITEMS_PER_PAGE));
@@ -68,59 +87,94 @@ export default function Tasks() {
   }
 
   return (
-    <div className="soft-card rounded-[2.5rem] p-6 shadow-xl">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-4xl font-black gradient-text">Task List</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Search, filter, bulk manage, and review your tasks.
-          </p>
+    <div className="space-y-6 pb-12">
+      <div className="soft-card rounded-3xl p-6 shadow-xl border border-black/5 dark:border-white/10">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-500">
+              <Folder className="h-4 w-4" /> Work Items Master Table
+            </div>
+            <h1 className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+              All Tasks & Deliverables
+            </h1>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Multi-project work tracking, effort estimates, status filters, and bulk operations.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedIds.length > 0 && (
+              <div className="flex items-center gap-2 rounded-2xl bg-indigo-50 px-3 py-1.5 dark:bg-slate-800 border border-indigo-200 dark:border-indigo-900">
+                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                  {selectedIds.length} selected
+                </span>
+                <button
+                  onClick={handleBulkMarkDone}
+                  className="flex items-center gap-1 rounded-xl bg-emerald-500 px-2.5 py-1 text-xs font-bold text-white shadow-xs hover:bg-emerald-600 transition"
+                >
+                  <CheckCircle2 size={13} />
+                  <span>Mark Done</span>
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="flex items-center gap-1 rounded-xl bg-rose-500 px-2.5 py-1 text-xs font-bold text-white shadow-xs hover:bg-rose-600 transition"
+                >
+                  <Trash2 size={13} />
+                  <span>Delete</span>
+                </button>
+              </div>
+            )}
+
+            <Button
+              onClick={() => setIsTaskModalOpen(true)}
+              variant="gradient"
+              className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-xs font-bold"
+            >
+              <Plus className="h-4 w-4" /> New Work Item
+            </Button>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {selectedIds.length > 0 && (
-            <div className="flex items-center gap-2 rounded-2xl bg-indigo-50 px-3 py-1.5 dark:bg-slate-800">
-              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                {selectedIds.length} selected
-              </span>
-              <button
-                onClick={handleBulkMarkDone}
-                className="flex items-center gap-1 rounded-xl bg-emerald-500 px-2.5 py-1 text-xs font-bold text-white shadow hover:bg-emerald-600"
-              >
-                <CheckCircle2 size={13} />
-                <span>Mark Done</span>
-              </button>
-              <button
-                onClick={handleBulkDelete}
-                className="flex items-center gap-1 rounded-xl bg-rose-500 px-2.5 py-1 text-xs font-bold text-white shadow hover:bg-rose-600"
-              >
-                <Trash2 size={13} />
-                <span>Delete</span>
-              </button>
-            </div>
-          )}
-
-          <div className="flex items-center gap-2 rounded-2xl bg-white px-3 py-2 shadow-sm ring-1 ring-slate-200/70 dark:bg-slate-800 dark:ring-slate-700">
-            <Search size={16} className="text-slate-400" />
+        {/* Filters Toolbar */}
+        <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-black/5 dark:border-white/5 pt-4">
+          <div className="flex items-center gap-2 rounded-2xl bg-white/70 dark:bg-slate-800/70 px-3 py-2 text-xs font-medium shadow-xs ring-1 ring-slate-200/70 dark:ring-white/10 flex-1 min-w-[200px]">
+            <Search size={15} className="text-slate-400" />
             <input
               value={q}
               onChange={(e) => {
                 setQ(e.target.value);
                 setPage(1);
               }}
-              placeholder="Search tasks..."
-              className="w-40 bg-transparent text-sm outline-none placeholder:text-slate-400 sm:w-56"
+              placeholder="Search by title, description, or #tag..."
+              className="w-full bg-transparent outline-none placeholder:text-slate-400 text-slate-800 dark:text-white"
             />
           </div>
 
+          {/* Project Filter */}
           <select
-            aria-label="Status filter"
+            value={projectIdFilter}
+            onChange={(e) => {
+              setProjectIdFilter(e.target.value);
+              setPage(1);
+            }}
+            className="rounded-2xl bg-white/70 dark:bg-slate-800/70 px-3 py-2 text-xs font-semibold shadow-xs ring-1 ring-slate-200/70 dark:ring-white/10 outline-none text-slate-700 dark:text-slate-200"
+          >
+            <option value="all">All Projects</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                [{p.key}] {p.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Status Filter */}
+          <select
             value={status}
             onChange={(e) => {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="rounded-2xl bg-white px-3 py-2 text-sm font-semibold shadow-sm ring-1 ring-slate-200/70 outline-none dark:bg-slate-800 dark:ring-slate-700"
+            className="rounded-2xl bg-white/70 dark:bg-slate-800/70 px-3 py-2 text-xs font-semibold shadow-xs ring-1 ring-slate-200/70 dark:ring-white/10 outline-none text-slate-700 dark:text-slate-200"
           >
             <option value="all">All Statuses</option>
             <option value="backlog">Backlog</option>
@@ -130,150 +184,172 @@ export default function Tasks() {
             <option value="done">Done</option>
           </select>
         </div>
-      </div>
 
-      <div className="thin-scroll mt-5 overflow-x-auto">
-        <table className="w-full min-w-[860px] border-separate border-spacing-y-3">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wider text-slate-400">
-              <th className="w-12 p-3 text-center">
-                <button
-                  type="button"
-                  onClick={toggleSelectAll}
-                  aria-label="Select all tasks on page"
-                  className="grid place-items-center text-slate-400 hover:text-indigo-600"
-                >
-                  {allVisibleSelected ? (
-                    <CheckSquare size={18} className="text-indigo-600" />
-                  ) : (
-                    <Square size={18} />
-                  )}
-                </button>
-              </th>
-              <th>Task</th>
-              <th>Priority</th>
-              <th>Status</th>
-              <th>Due Date</th>
-              <th>Progress</th>
-              <th className="text-right pr-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="py-12 text-center text-sm font-bold text-slate-400">
-                  No tasks found matching your criteria.
-                </td>
-              </tr>
-            ) : (
-              rows.map((t) => {
-                const isSelected = selectedIds.includes(t.id);
-                return (
-                  <tr
-                    key={t.id}
-                    className={`rounded-2xl transition ${
-                      isSelected
-                        ? "bg-indigo-50/80 ring-2 ring-indigo-400 dark:bg-slate-800/90"
-                        : "bg-white/80 shadow-sm dark:bg-slate-800/70"
-                    }`}
+        {/* Master Table */}
+        <div className="thin-scroll mt-5 overflow-x-auto">
+          <table className="w-full min-w-[920px] border-separate border-spacing-y-2">
+            <thead>
+              <tr className="text-left text-xs uppercase tracking-wider text-slate-400">
+                <th className="w-12 p-3 text-center">
+                  <button
+                    type="button"
+                    onClick={toggleSelectAll}
+                    aria-label="Select all tasks on page"
+                    className="grid place-items-center text-slate-400 hover:text-indigo-600"
                   >
-                    <td className="rounded-l-2xl p-3 text-center">
-                      <button
-                        type="button"
-                        onClick={() => toggleSelect(t.id)}
-                        aria-label={`Select task ${t.title}`}
-                        className="grid place-items-center text-slate-400 hover:text-indigo-600"
-                      >
-                        {isSelected ? (
-                          <CheckSquare size={18} className="text-indigo-600" />
-                        ) : (
-                          <Square size={18} />
-                        )}
-                      </button>
-                    </td>
-                    <td className="py-3">
-                      <b className="text-slate-900 dark:text-white">{t.title}</b>
-                      <p className="line-clamp-1 text-xs text-slate-500">{t.description}</p>
-                    </td>
-                    <td>
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-black uppercase ${priorityStyles[t.priority]}`}
-                      >
-                        {t.priority}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-black capitalize text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                        {t.status}
-                      </span>
-                    </td>
-                    <td className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                      {new Date(t.dueDate).toLocaleDateString()}
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-28 rounded-full bg-slate-100 dark:bg-slate-700">
-                          <div
-                            style={{ width: `${t.progress}%` }}
-                            className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500"
-                          />
-                        </div>
-                        <span className="text-xs font-bold text-slate-500">
-                          {t.progress}%
-                        </span>
-                      </div>
-                    </td>
-                    <td className="rounded-r-2xl pr-4 text-right">
-                      <button
-                        aria-label="Delete task"
-                        onClick={() => del(t.id)}
-                        className="rounded-xl p-2 text-rose-500 transition hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                    {allVisibleSelected ? (
+                      <CheckSquare size={18} className="text-indigo-600" />
+                    ) : (
+                      <Square size={18} />
+                    )}
+                  </button>
+                </th>
+                <th>Work Item</th>
+                <th>Project</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Time (Log / Est)</th>
+                <th>Due Date</th>
+                <th>Progress</th>
+                <th className="text-right pr-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="py-12 text-center text-sm font-bold text-slate-400">
+                    No work items found matching your criteria.
+                  </td>
+                </tr>
+              ) : (
+                rows.map((t) => {
+                  const isSelected = selectedIds.includes(t.id);
+                  const project = projects.find((p) => p.id === t.projectId);
 
-      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-sm font-bold text-slate-500">
-        <span>
-          Showing {rows.length} of {filteredTasks.length} tasks
-        </span>
-        <div className="flex items-center gap-2">
-          <button
-            disabled={currentPage <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="rounded-xl bg-white px-3 py-2 shadow-sm ring-1 ring-slate-200/70 transition disabled:opacity-40 dark:bg-slate-800 dark:ring-slate-700"
-          >
-            Previous
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                  return (
+                    <tr
+                      key={t.id}
+                      className={`rounded-2xl transition ${
+                        isSelected
+                          ? "bg-indigo-50/80 ring-2 ring-indigo-400 dark:bg-slate-800/90"
+                          : "bg-white/80 dark:bg-slate-800/60 shadow-xs"
+                      }`}
+                    >
+                      <td className="rounded-l-2xl p-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => toggleSelect(t.id)}
+                          aria-label={`Select task ${t.title}`}
+                          className="grid place-items-center text-slate-400 hover:text-indigo-600"
+                        >
+                          {isSelected ? (
+                            <CheckSquare size={18} className="text-indigo-600" />
+                          ) : (
+                            <Square size={18} />
+                          )}
+                        </button>
+                      </td>
+                      <td className="py-3 max-w-[260px]">
+                        <b className="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                          {t.title}
+                        </b>
+                        <p className="line-clamp-1 text-[11px] text-slate-500 dark:text-slate-400">
+                          {t.description}
+                        </p>
+                      </td>
+                      <td>
+                        {project ? (
+                          <span
+                            className="inline-flex rounded-md px-2 py-0.5 text-[10px] font-black text-white"
+                            style={{ backgroundColor: project.color }}
+                          >
+                            {project.key}
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td>
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase ${priorityStyles[t.priority]}`}
+                        >
+                          {t.priority}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="rounded-full bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 text-[11px] font-bold capitalize text-indigo-700 dark:text-indigo-300">
+                          {t.status}
+                        </span>
+                      </td>
+                      <td className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                        <span className="inline-flex items-center gap-1">
+                          <Clock size={12} className="text-indigo-500" />
+                          {t.loggedHours || 0}h / {t.estimatedHours || 4}h
+                        </span>
+                      </td>
+                      <td className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                        {new Date(t.dueDate).toLocaleDateString()}
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-20 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                            <div
+                              style={{ width: `${t.progress}%` }}
+                              className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500"
+                            />
+                          </div>
+                          <span className="text-[11px] font-bold text-slate-500">
+                            {t.progress}%
+                          </span>
+                        </div>
+                      </td>
+                      <td className="rounded-r-2xl pr-4 text-right">
+                        <button
+                          aria-label="Delete task"
+                          onClick={() => del(t.id)}
+                          className="rounded-xl p-1.5 text-rose-500 transition hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination Bar */}
+        <div className="mt-5 flex items-center justify-between border-t border-black/5 dark:border-white/5 pt-4 text-xs font-medium text-slate-500">
+          <div>
+            Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
+            {Math.min(currentPage * ITEMS_PER_PAGE, filteredTasks.length)} of{" "}
+            {filteredTasks.length} work items
+          </div>
+          <div className="flex items-center gap-2">
             <button
-              key={num}
-              onClick={() => setPage(num)}
-              className={`h-9 w-9 rounded-xl font-bold transition shadow-sm ${
-                currentPage === num
-                  ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white"
-                  : "bg-white ring-1 ring-slate-200/70 dark:bg-slate-800 dark:ring-slate-700"
-              }`}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="rounded-xl border border-black/10 dark:border-white/10 px-3 py-1.5 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
-              {num}
+              Previous
             </button>
-          ))}
-          <button
-            disabled={currentPage >= totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            className="rounded-xl bg-white px-3 py-2 shadow-sm ring-1 ring-slate-200/70 transition disabled:opacity-40 dark:bg-slate-800 dark:ring-slate-700"
-          >
-            Next
-          </button>
+            <span className="font-bold text-slate-800 dark:text-slate-200">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="rounded-xl border border-black/10 dark:border-white/10 px-3 py-1.5 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
+
+      <TaskModal open={isTaskModalOpen} onClose={() => setIsTaskModalOpen(false)} />
     </div>
   );
 }

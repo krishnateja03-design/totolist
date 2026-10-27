@@ -1,4 +1,4 @@
-import { Column, Goal, Notification, Task, TeamMember } from "../types";
+import { Column, Goal, Notification, Project, Task, TeamMember } from "../types";
 
 export const columns: Column[] = [
   { id: "backlog", title: "Backlog", gradient: "from-slate-400 to-slate-600" },
@@ -8,201 +8,64 @@ export const columns: Column[] = [
   { id: "done", title: "Done", gradient: "from-emerald-500 to-teal-500" },
 ];
 
-const now = new Date();
-const addDays = (days: number) => {
-  const d = new Date(now);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split("T")[0];
-};
+// Clean slate initial state: 0 dummy projects, 0 dummy tasks, 0 dummy notifications
+export const sampleProjects: Project[] = [];
 
-export const tasks: Task[] = [
-  {
-    id: "t1",
-    title: "Launch AI task composer",
-    description: "Polish command palette and smart task creation.",
-    status: "progress",
-    priority: "urgent",
-    assignees: ["KT", "AM"],
-    dueDate: addDays(2),
-    comments: 12,
-    attachments: 4,
-    progress: 72,
-    tags: ["AI", "Launch"],
-  },
-  {
-    id: "t2",
-    title: "Calendar timeline redesign",
-    description: "Create colorful week and day interactions.",
-    status: "planned",
-    priority: "high",
-    assignees: ["SK"],
-    dueDate: addDays(4),
-    comments: 8,
-    attachments: 2,
-    progress: 38,
-    tags: ["Calendar"],
-  },
-  {
-    id: "t3",
-    title: "Team workload insights",
-    description: "Animated analytics widgets and insights.",
-    status: "review",
-    priority: "medium",
-    assignees: ["NR", "AM"],
-    dueDate: addDays(1),
-    comments: 5,
-    attachments: 1,
-    progress: 88,
-    tags: ["Analytics"],
-  },
-  {
-    id: "t4",
-    title: "Premium onboarding checklist",
-    description: "Make first-run experience feel magical.",
-    status: "backlog",
-    priority: "medium",
-    assignees: ["KT"],
-    dueDate: addDays(7),
-    comments: 3,
-    attachments: 0,
-    progress: 12,
-    tags: ["UX"],
-  },
-  {
-    id: "t5",
-    title: "Goal progress celebration",
-    description: "Confetti and animated milestone cards.",
-    status: "done",
-    priority: "low",
-    assignees: ["SK", "NR"],
-    dueDate: addDays(-2),
-    comments: 18,
-    attachments: 6,
-    progress: 100,
-    tags: ["Delight"],
-  },
-  {
-    id: "t6",
-    title: "Reports export center",
-    description: "PDF, CSV and Excel export controls.",
-    status: "planned",
-    priority: "high",
-    assignees: ["AM"],
-    dueDate: addDays(5),
-    comments: 4,
-    attachments: 3,
-    progress: 44,
-    tags: ["Reports"],
-  },
-];
+export const tasks: Task[] = [];
 
-export const notifications: Notification[] = [
-  {
-    id: "n1",
-    title: "Task assigned",
-    message: "AI composer is now assigned to you.",
-    type: "task",
-    read: false,
-    time: "2m ago",
-  },
-  {
-    id: "n2",
-    title: "Due date reminder",
-    message: "Team insights review is due tomorrow.",
-    type: "reminder",
-    read: false,
-    time: "18m ago",
-  },
-  {
-    id: "n3",
-    title: "Task completed",
-    message: "Goal celebration shipped successfully.",
-    type: "done",
-    read: true,
-    time: "1h ago",
-  },
-  {
-    id: "n4",
-    title: "Team update",
-    message: "Nora updated workload planning.",
-    type: "team",
-    read: false,
-    time: "3h ago",
-  },
-];
+export const notifications: Notification[] = [];
 
-export const goals: Goal[] = [
-  {
-    id: "g1",
-    title: "Ship WOW dashboard",
-    owner: "Product",
-    progress: 82,
-    milestones: ["Design system", "Kanban", "Analytics"],
-    gradient: "from-indigo-500 to-violet-500",
-  },
-  {
-    id: "g2",
-    title: "Improve team velocity",
-    owner: "Operations",
-    progress: 67,
-    milestones: ["Sprints", "Reports", "Retros"],
-    gradient: "from-cyan-500 to-blue-500",
-  },
-  {
-    id: "g3",
-    title: "Reduce overdue tasks",
-    owner: "Growth",
-    progress: 54,
-    milestones: ["Reminders", "Focus mode", "Escalations"],
-    gradient: "from-rose-500 to-pink-500",
-  },
-];
+export const goals: Goal[] = [];
 
 export const team: TeamMember[] = [
   {
     id: "m1",
     name: "Krishna Teja",
-    role: "Product Lead",
+    role: "Project Lead",
     avatar: "KT",
     online: true,
-    workload: 74,
+    workload: 0,
     ring: "from-indigo-500 to-cyan-500",
+    assignedProjects: [],
   },
   {
     id: "m2",
     name: "Ava Morgan",
-    role: "Designer",
+    role: "Product Designer",
     avatar: "AM",
     online: true,
-    workload: 61,
+    workload: 0,
     ring: "from-pink-500 to-rose-500",
+    assignedProjects: [],
   },
   {
     id: "m3",
     name: "Sam Kim",
-    role: "Frontend Engineer",
+    role: "Software Engineer",
     avatar: "SK",
     online: false,
-    workload: 82,
+    workload: 0,
     ring: "from-emerald-500 to-teal-500",
+    assignedProjects: [],
   },
   {
     id: "m4",
     name: "Nora Reid",
-    role: "Data Analyst",
+    role: "Operations & QA",
     avatar: "NR",
     online: true,
-    workload: 48,
+    workload: 0,
     ring: "from-amber-500 to-orange-500",
+    assignedProjects: [],
   },
 ];
 
 export const chartData = [
-  { name: "Mon", tasks: 12, score: 74, done: 8 },
-  { name: "Tue", tasks: 18, score: 78, done: 11 },
-  { name: "Wed", tasks: 15, score: 81, done: 10 },
-  { name: "Thu", tasks: 24, score: 86, done: 16 },
-  { name: "Fri", tasks: 22, score: 91, done: 18 },
-  { name: "Sat", tasks: 10, score: 88, done: 7 },
-  { name: "Sun", tasks: 14, score: 93, done: 12 },
+  { name: "Mon", tasks: 0, score: 0, done: 0, hours: 0 },
+  { name: "Tue", tasks: 0, score: 0, done: 0, hours: 0 },
+  { name: "Wed", tasks: 0, score: 0, done: 0, hours: 0 },
+  { name: "Thu", tasks: 0, score: 0, done: 0, hours: 0 },
+  { name: "Fri", tasks: 0, score: 0, done: 0, hours: 0 },
+  { name: "Sat", tasks: 0, score: 0, done: 0, hours: 0 },
+  { name: "Sun", tasks: 0, score: 0, done: 0, hours: 0 },
 ];

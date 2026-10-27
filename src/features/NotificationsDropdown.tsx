@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
-import { Bell, CheckCircle2, Clock, Users } from "lucide-react";
+import { Bell, CheckCircle2, Clock, Users, FolderKanban } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 
-const icons = { task: Bell, reminder: Clock, team: Users, done: CheckCircle2 };
+const icons = { task: Bell, reminder: Clock, team: Users, done: CheckCircle2, project: FolderKanban };
+
 
 export function NotificationsDropdown({ onClose }: { onClose?: () => void }) {
   const ns = useAppStore((s) => s.notifications);
