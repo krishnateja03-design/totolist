@@ -55,10 +55,10 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="soft-card rounded-3xl p-5 border border-black/5 dark:border-white/10 flex flex-col justify-between">
+    <div className="soft-card rounded-xl p-5 border border-slate-200/80 dark:border-white/8 flex flex-col">
       <div className="mb-4">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h2>
-        {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>}
+        <h2 className="text-sm font-bold text-slate-900 dark:text-white">{title}</h2>
+        {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
       </div>
       <div className="h-64 w-full">{children}</div>
     </div>
@@ -75,9 +75,9 @@ export default function Analytics() {
   /** Total task count across all projects */
   const total = tasks.length;
   /**
-   * Portfolio completion rate as a whole percentage.
-   * Guard against division by zero when no tasks exist yet.
-   */
+    * Portfolio completion rate as a whole percentage.
+    * Guard against division by zero when no tasks exist yet.
+    */
   const completionRate =
     total === 0 ? 0 : Math.round((completed / total) * 100);
 
@@ -94,9 +94,9 @@ export default function Analytics() {
   // ─── Chart Data ────────────────────────────────────────────────────────
 
   /**
-   * Data for the Pie/Donut chart showing task count per Kanban stage.
-   * Each entry maps to a slice colored by `statusColors`.
-   */
+    * Data for the Pie/Donut chart showing task count per Kanban stage.
+    * Each entry maps to a slice colored by `statusColors`.
+    */
   const statusData = [
     { name: "Backlog",     value: tasks.filter((t) => t.status === "backlog").length },
     { name: "Planned",     value: tasks.filter((t) => t.status === "planned").length },
@@ -106,11 +106,11 @@ export default function Analytics() {
   ];
 
   /**
-   * Data for the Bar chart showing per-project delivery breakdown.
-   * Each project becomes one group of bars: "done" (completed) and "pending" (remaining).
-   * Project names longer than 18 chars are truncated to fit the X-axis label.
-   * `hours` is included in the tooltip for time context.
-   */
+    * Data for the Bar chart showing per-project delivery breakdown.
+    * Each project becomes one group of bars: "done" (completed) and "pending" (remaining).
+    * Project names longer than 18 chars are truncated to fit the X-axis label.
+    * `hours` is included in the tooltip for time context.
+    */
   const projectComparisonData = projects.map((p) => {
     const pTasks = tasks.filter((t) => t.projectId === p.id);
     const pDone = pTasks.filter((t) => t.status === "done").length;
@@ -125,70 +125,65 @@ export default function Analytics() {
   });
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-5 pb-10">
       <div>
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-500">
-          <TrendingUp className="h-4 w-4" /> Portfolio Velocity & Insights
-        </div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-          Project Analytics & Telemetry
-        </h1>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          Executive metrics on delivery throughput, resource hours, and budget allocations.
+        <h1 className="text-xl font-bold text-slate-900 dark:text-white">Analytics</h1>
+        <p className="mt-0.5 text-xs text-slate-400">
+          Delivery velocity, logged hours, and budget metrics across {projects.length} initiatives.
         </p>
       </div>
 
       {/* KPI Highlight Strip */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <div className="soft-card rounded-3xl p-5 border border-black/5 dark:border-white/10">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase">
-            <span>Portfolio Completion</span>
-            <CheckCircle2 size={16} className="text-emerald-500" />
+      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+        <div className="soft-card rounded-xl p-4 border border-slate-200/80 dark:border-white/8">
+          <div className="flex items-center justify-between text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+            <span>Completion Rate</span>
+            <CheckCircle2 size={15} className="text-emerald-500" />
           </div>
-          <h2 className="mt-2 text-3xl font-black text-slate-900 dark:text-white">
+          <h2 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
             {completionRate}%
           </h2>
-          <p className="mt-1 text-xs text-slate-500">
-            {completed} of {total} deliverables shipped
+          <p className="mt-0.5 text-[11px] text-slate-400">
+            {completed} of {total} tasks shipped
           </p>
         </div>
 
-        <div className="soft-card rounded-3xl p-5 border border-black/5 dark:border-white/10">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase">
-            <span>Active Initiatives</span>
-            <FolderKanban size={16} className="text-indigo-500" />
+        <div className="soft-card rounded-xl p-4 border border-slate-200/80 dark:border-white/8">
+          <div className="flex items-center justify-between text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+            <span>Projects</span>
+            <FolderKanban size={15} className="text-indigo-500" />
           </div>
-          <h2 className="mt-2 text-3xl font-black text-slate-900 dark:text-white">
+          <h2 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
             {projects.length}
           </h2>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-0.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
             {projects.filter((p) => p.health === "on-track").length} on track
           </p>
         </div>
 
-        <div className="soft-card rounded-3xl p-5 border border-black/5 dark:border-white/10">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase">
+        <div className="soft-card rounded-xl p-4 border border-slate-200/80 dark:border-white/8">
+          <div className="flex items-center justify-between text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
             <span>Time Logged</span>
-            <Clock size={16} className="text-cyan-500" />
+            <Clock size={15} className="text-sky-500" />
           </div>
-          <h2 className="mt-2 text-3xl font-black text-slate-900 dark:text-white">
+          <h2 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
             {totalLoggedHours}h
           </h2>
-          <p className="mt-1 text-xs text-slate-500">
-            of {totalEstimatedHours}h estimated effort
+          <p className="mt-0.5 text-[11px] text-slate-400">
+            of {totalEstimatedHours}h estimated
           </p>
         </div>
 
-        <div className="soft-card rounded-3xl p-5 border border-black/5 dark:border-white/10">
-          <div className="flex items-center justify-between text-slate-400 text-xs font-bold uppercase">
-            <span>Budget Utilization</span>
-            <DollarSign size={16} className="text-amber-500" />
+        <div className="soft-card rounded-xl p-4 border border-slate-200/80 dark:border-white/8">
+          <div className="flex items-center justify-between text-slate-400 text-[11px] font-semibold uppercase tracking-wider">
+            <span>Budget Burn</span>
+            <DollarSign size={15} className="text-amber-500" />
           </div>
-          <h2 className="mt-2 text-3xl font-black text-slate-900 dark:text-white">
+          <h2 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
             ${(totalBudgetSpent / 1000).toFixed(1)}k
           </h2>
-          <p className="mt-1 text-xs text-slate-500">
-            of ${(totalBudgetAllocated / 1000).toFixed(0)}k total budget
+          <p className="mt-0.5 text-[11px] text-slate-400">
+            of ${(totalBudgetAllocated / 1000).toFixed(0)}k allocated
           </p>
         </div>
       </div>

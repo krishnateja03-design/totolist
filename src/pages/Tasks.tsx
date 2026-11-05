@@ -157,37 +157,34 @@ export default function Tasks() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
-      <div className="soft-card rounded-3xl p-6 shadow-xl border border-black/5 dark:border-white/10">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-5 pb-10">
+      <div className="soft-card rounded-xl border border-slate-200/80 dark:border-white/8 overflow-hidden">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between px-5 py-4 border-b border-slate-100 dark:border-white/5">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-500">
-              <Folder className="h-4 w-4" /> Work Items Master Table
-            </div>
-            <h1 className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-              All Tasks & Deliverables
+            <h1 className="text-lg font-bold text-slate-900 dark:text-white">
+              All Tasks
             </h1>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Multi-project work tracking, effort estimates, status filters, and bulk operations.
+            <p className="mt-0.5 text-xs text-slate-400">
+              {tasks.length} work items across {projects.length} projects
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {selectedIds.length > 0 && (
-              <div className="flex items-center gap-2 rounded-2xl bg-indigo-50 px-3 py-1.5 dark:bg-slate-800 border border-indigo-200 dark:border-indigo-900">
-                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+              <div className="flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-1.5 dark:bg-slate-800 border border-indigo-200 dark:border-indigo-900">
+                <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                   {selectedIds.length} selected
                 </span>
                 <button
                   onClick={handleBulkMarkDone}
-                  className="flex items-center gap-1 rounded-xl bg-emerald-500 px-2.5 py-1 text-xs font-bold text-white shadow-xs hover:bg-emerald-600 transition"
+                  className="flex items-center gap-1 rounded-md bg-emerald-500 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-emerald-600 transition"
                 >
                   <CheckCircle2 size={13} />
                   <span>Mark Done</span>
                 </button>
                 <button
                   onClick={handleBulkDelete}
-                  className="flex items-center gap-1 rounded-xl bg-rose-500 px-2.5 py-1 text-xs font-bold text-white shadow-xs hover:bg-rose-600 transition"
+                  className="flex items-center gap-1 rounded-md bg-rose-500 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-rose-600 transition"
                 >
                   <Trash2 size={13} />
                   <span>Delete</span>
@@ -197,25 +194,24 @@ export default function Tasks() {
 
             <Button
               onClick={() => setIsTaskModalOpen(true)}
-              variant="gradient"
-              className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-xs font-bold"
+              className="flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition"
             >
-              <Plus className="h-4 w-4" /> New Work Item
+              <Plus className="h-4 w-4" /> New Task
             </Button>
           </div>
         </div>
 
         {/* Filters Toolbar */}
-        <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-black/5 dark:border-white/5 pt-4">
-          <div className="flex items-center gap-2 rounded-2xl bg-white/70 dark:bg-slate-800/70 px-3 py-2 text-xs font-medium shadow-xs ring-1 ring-slate-200/70 dark:ring-white/10 flex-1 min-w-[200px]">
-            <Search size={15} className="text-slate-400" />
+        <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 dark:border-white/5 px-5 py-3 bg-slate-50/50 dark:bg-slate-900/30">
+          <div className="flex items-center gap-2 rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium shadow-xs border border-slate-200 dark:border-slate-700 flex-1 min-w-[200px]">
+            <Search size={14} className="text-slate-400" />
             <input
               value={q}
               onChange={(e) => {
                 setQ(e.target.value);
                 setPage(1);
               }}
-              placeholder="Search by title, description, or #tag..."
+              placeholder="Search by title, description, or tag..."
               className="w-full bg-transparent outline-none placeholder:text-slate-400 text-slate-800 dark:text-white"
             />
           </div>
@@ -227,7 +223,7 @@ export default function Tasks() {
               setProjectIdFilter(e.target.value);
               setPage(1);
             }}
-            className="rounded-2xl bg-white/70 dark:bg-slate-800/70 px-3 py-2 text-xs font-semibold shadow-xs ring-1 ring-slate-200/70 dark:ring-white/10 outline-none text-slate-700 dark:text-slate-200"
+            className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium shadow-xs border border-slate-200 dark:border-slate-700 outline-none text-slate-700 dark:text-slate-200"
           >
             <option value="all">All Projects</option>
             {projects.map((p) => (
@@ -244,7 +240,7 @@ export default function Tasks() {
               setStatus(e.target.value);
               setPage(1);
             }}
-            className="rounded-2xl bg-white/70 dark:bg-slate-800/70 px-3 py-2 text-xs font-semibold shadow-xs ring-1 ring-slate-200/70 dark:ring-white/10 outline-none text-slate-700 dark:text-slate-200"
+            className="rounded-lg bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium shadow-xs border border-slate-200 dark:border-slate-700 outline-none text-slate-700 dark:text-slate-200"
           >
             <option value="all">All Statuses</option>
             <option value="backlog">Backlog</option>
@@ -256,11 +252,11 @@ export default function Tasks() {
         </div>
 
         {/* Master Table */}
-        <div className="thin-scroll mt-5 overflow-x-auto">
-          <table className="w-full min-w-[920px] border-separate border-spacing-y-2">
+        <div className="thin-scroll overflow-x-auto px-5">
+          <table className="w-full min-w-[920px] border-collapse">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wider text-slate-400">
-                <th className="w-12 p-3 text-center">
+              <tr className="border-b border-slate-100 dark:border-white/5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <th className="w-10 py-3 text-center">
                   <button
                     type="button"
                     onClick={toggleSelectAll}
@@ -268,23 +264,23 @@ export default function Tasks() {
                     className="grid place-items-center text-slate-400 hover:text-indigo-600"
                   >
                     {allVisibleSelected ? (
-                      <CheckSquare size={18} className="text-indigo-600" />
+                      <CheckSquare size={16} className="text-indigo-600" />
                     ) : (
-                      <Square size={18} />
+                      <Square size={16} />
                     )}
                   </button>
                 </th>
-                <th>Work Item</th>
-                <th>Project</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Time (Log / Est)</th>
-                <th>Due Date</th>
-                <th>Progress</th>
-                <th className="text-right pr-4">Actions</th>
+                <th className="py-3">Work Item</th>
+                <th className="py-3">Project</th>
+                <th className="py-3">Priority</th>
+                <th className="py-3">Status</th>
+                <th className="py-3">Time</th>
+                <th className="py-3">Due Date</th>
+                <th className="py-3">Progress</th>
+                <th className="py-3 text-right pr-2">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
               {rows.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="py-12 text-center text-sm font-bold text-slate-400">
@@ -299,13 +295,13 @@ export default function Tasks() {
                   return (
                     <tr
                       key={t.id}
-                      className={`rounded-2xl transition ${
+                      className={`transition ${
                         isSelected
-                          ? "bg-indigo-50/80 ring-2 ring-indigo-400 dark:bg-slate-800/90"
-                          : "bg-white/80 dark:bg-slate-800/60 shadow-xs"
+                          ? "bg-indigo-50/70 dark:bg-slate-800/80"
+                          : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
                       }`}
                     >
-                      <td className="rounded-l-2xl p-3 text-center">
+                      <td className="py-2.5 text-center">
                         <button
                           type="button"
                           onClick={() => toggleSelect(t.id)}
@@ -313,24 +309,24 @@ export default function Tasks() {
                           className="grid place-items-center text-slate-400 hover:text-indigo-600"
                         >
                           {isSelected ? (
-                            <CheckSquare size={18} className="text-indigo-600" />
+                            <CheckSquare size={16} className="text-indigo-600" />
                           ) : (
-                            <Square size={18} />
+                            <Square size={16} />
                           )}
                         </button>
                       </td>
-                      <td className="py-3 max-w-[260px]">
-                        <b className="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                      <td className="py-2.5 max-w-[260px]">
+                        <b className="text-xs font-semibold text-slate-900 dark:text-white block truncate">
                           {t.title}
                         </b>
                         <p className="line-clamp-1 text-[11px] text-slate-500 dark:text-slate-400">
                           {t.description}
                         </p>
                       </td>
-                      <td>
+                      <td className="py-2.5">
                         {project ? (
                           <span
-                            className="inline-flex rounded-md px-2 py-0.5 text-[10px] font-black text-white"
+                            className="inline-flex rounded px-1.5 py-0.5 text-[10px] font-bold text-white"
                             style={{ backgroundColor: project.color }}
                           >
                             {project.key}
@@ -339,47 +335,50 @@ export default function Tasks() {
                           <span className="text-[11px] text-slate-400">—</span>
                         )}
                       </td>
-                      <td>
+                      <td className="py-2.5">
                         <span
-                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase ${priorityStyles[t.priority]}`}
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${priorityStyles[t.priority]}`}
                         >
                           {t.priority}
                         </span>
                       </td>
-                      <td>
-                        <span className="rounded-full bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-0.5 text-[11px] font-bold capitalize text-indigo-700 dark:text-indigo-300">
+                      <td className="py-2.5">
+                        <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-medium capitalize text-slate-700 dark:text-slate-300">
                           {t.status}
                         </span>
                       </td>
-                      <td className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                      <td className="py-2.5 text-xs text-slate-600 dark:text-slate-300 font-medium">
                         <span className="inline-flex items-center gap-1">
-                          <Clock size={12} className="text-indigo-500" />
+                          <Clock size={12} className="text-slate-400" />
                           {t.loggedHours || 0}h / {t.estimatedHours || 4}h
                         </span>
                       </td>
-                      <td className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                        {new Date(t.dueDate).toLocaleDateString()}
+                      <td className="py-2.5 text-xs text-slate-600 dark:text-slate-300">
+                        {new Date(t.dueDate).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </td>
-                      <td>
+                      <td className="py-2.5">
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-20 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                          <div className="h-1.5 w-16 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
                             <div
                               style={{ width: `${t.progress}%` }}
-                              className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500"
+                              className="h-full rounded-full bg-indigo-500"
                             />
                           </div>
-                          <span className="text-[11px] font-bold text-slate-500">
+                          <span className="text-[11px] font-semibold text-slate-400">
                             {t.progress}%
                           </span>
                         </div>
                       </td>
-                      <td className="rounded-r-2xl pr-4 text-right">
+                      <td className="py-2.5 pr-2 text-right">
                         <button
                           aria-label="Delete task"
                           onClick={() => del(t.id)}
-                          className="rounded-xl p-1.5 text-rose-500 transition hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                          className="rounded-lg p-1 text-slate-400 transition hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                         >
-                          <Trash2 size={15} />
+                          <Trash2 size={14} />
                         </button>
                       </td>
                     </tr>
@@ -391,27 +390,27 @@ export default function Tasks() {
         </div>
 
         {/* Pagination Bar */}
-        <div className="mt-5 flex items-center justify-between border-t border-black/5 dark:border-white/5 pt-4 text-xs font-medium text-slate-500">
+        <div className="flex items-center justify-between border-t border-slate-100 dark:border-white/5 px-5 py-3 text-xs font-medium text-slate-500">
           <div>
             Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
             {Math.min(currentPage * ITEMS_PER_PAGE, filteredTasks.length)} of{" "}
             {filteredTasks.length} work items
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="rounded-xl border border-black/10 dark:border-white/10 px-3 py-1.5 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="rounded-lg border border-slate-200 dark:border-slate-700 px-2.5 py-1 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               Previous
             </button>
-            <span className="font-bold text-slate-800 dark:text-slate-200">
-              Page {currentPage} of {totalPages}
+            <span className="font-semibold text-slate-700 dark:text-slate-300 px-1">
+              {currentPage} / {totalPages}
             </span>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="rounded-xl border border-black/10 dark:border-white/10 px-3 py-1.5 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800"
+              className="rounded-lg border border-slate-200 dark:border-slate-700 px-2.5 py-1 disabled:opacity-40 hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               Next
             </button>

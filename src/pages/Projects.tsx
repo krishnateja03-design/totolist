@@ -80,62 +80,48 @@ export default function Projects() {
   const overallTaskProgress = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   return (
-    <div className="space-y-8 pb-12">
-      {/* Top Banner & Header */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-indigo-900/40 via-purple-900/30 to-slate-900/60 p-6 md:p-8 backdrop-blur-xl shadow-2xl">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 -mb-20 h-64 w-64 rounded-full bg-pink-500/15 blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3.5 py-1 text-xs font-bold tracking-wider uppercase text-indigo-300">
-              <FolderKanban className="h-3.5 w-3.5" /> Project Portfolio Hub
-            </div>
-            <h1 className="mt-3 text-3xl md:text-4xl font-extrabold tracking-tight text-white">
-              Enterprise Project Management
-            </h1>
-            <p className="mt-2 text-sm text-slate-300 max-w-xl">
-              Coordinate multi-disciplinary teams, track deliverables, monitor budgets, and accelerate product velocity across initiatives.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              variant="gradient"
-              className="flex items-center gap-2 rounded-2xl px-5 py-3 shadow-xl shadow-indigo-500/25"
-            >
-              <Plus className="h-4 w-4" /> New Project
-            </Button>
-          </div>
+    <div className="space-y-5 pb-10">
+      {/* Page Header */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Projects</h1>
+          <p className="mt-0.5 text-xs text-slate-400">
+            {totalProjects} active initiatives · {completedTasks} of {totalTasks} deliverables shipped ({overallTaskProgress}%)
+          </p>
         </div>
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className="shrink-0 flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition"
+        >
+          <Plus className="h-4 w-4" /> New Project
+        </Button>
+      </div>
 
-        {/* Portfolio KPI Bar */}
-        <div className="relative z-10 mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4 border-t border-white/10 pt-6">
-          <div>
-            <div className="text-xs font-semibold text-slate-400">Total Projects</div>
-            <div className="mt-1 text-2xl font-bold text-white">{totalProjects}</div>
-            <div className="text-[11px] text-emerald-400 font-medium mt-0.5">{activeProjects} in execution</div>
+      {/* Metric Cards Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="soft-card rounded-xl border border-slate-200/80 dark:border-white/8 p-4">
+          <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Projects</div>
+          <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{totalProjects}</div>
+          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">{activeProjects} active</div>
+        </div>
+        <div className="soft-card rounded-xl border border-slate-200/80 dark:border-white/8 p-4">
+          <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Velocity</div>
+          <div className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{overallTaskProgress}%</div>
+          <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">{completedTasks}/{totalTasks} tasks</div>
+        </div>
+        <div className="soft-card rounded-xl border border-slate-200/80 dark:border-white/8 p-4">
+          <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">On Track</div>
+          <div className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+            {projects.filter((p) => p.health === "on-track").length}
           </div>
-          <div>
-            <div className="text-xs font-semibold text-slate-400">Task Velocity</div>
-            <div className="mt-1 text-2xl font-bold text-white">{completedTasks} / {totalTasks}</div>
-            <div className="text-[11px] text-indigo-300 font-medium mt-0.5">{overallTaskProgress}% overall done</div>
+          <div className="text-[11px] text-slate-400 font-medium mt-0.5">Healthy execution</div>
+        </div>
+        <div className="soft-card rounded-xl border border-slate-200/80 dark:border-white/8 p-4">
+          <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Needs Attention</div>
+          <div className="mt-1 text-2xl font-bold text-amber-500">
+            {projects.filter((p) => p.health !== "on-track").length}
           </div>
-          <div>
-            <div className="text-xs font-semibold text-slate-400">Portfolio Health</div>
-            <div className="mt-1 text-2xl font-bold text-white">
-              {projects.filter((p) => p.health === "on-track").length} <span className="text-sm font-normal text-slate-400">on track</span>
-            </div>
-            <div className="text-[11px] text-amber-400 font-medium mt-0.5">
-              {projects.filter((p) => p.health !== "on-track").length} requiring review
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-semibold text-slate-400">Team Capacity</div>
-            <div className="mt-1 text-2xl font-bold text-white">84%</div>
-            <div className="text-[11px] text-cyan-300 font-medium mt-0.5">Optimal bandwidth</div>
-          </div>
+          <div className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-0.5">Review required</div>
         </div>
       </div>
 
@@ -229,10 +215,10 @@ export default function Projects() {
               <motion.div
                 key={project.id}
                 layout
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="soft-card group relative flex flex-col justify-between rounded-3xl p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-black/5 dark:border-white/10"
+                exit={{ opacity: 0, scale: 0.98 }}
+                className="soft-card group relative flex flex-col justify-between rounded-xl p-5 transition-all duration-200 hover:shadow-md border border-slate-200/80 dark:border-white/8"
               >
                 <div>
                   {/* Top Bar with Key, Category & Health */}

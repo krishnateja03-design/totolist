@@ -1,6 +1,6 @@
 /**
  * @file layouts/AppLayout.tsx
- * @description The root layout wrapper for all authenticated pages in Nexus PM.
+ * @description The root layout wrapper for all authenticated pages in ProFlow.
  *
  * Responsibilities:
  *   1. Renders the collapsible Sidebar navigation (desktop: always visible, mobile: slide-in drawer)
@@ -36,11 +36,8 @@ import {
   Plus,
   Settings,
   Sun,
-  Users,
   X,
-  Zap,
-  Clock,
-  Sparkles,
+  Layers,
 } from "lucide-react";
 import { useState } from "react";
 import { BackgroundBlobs } from "../components/BackgroundBlobs";
@@ -57,12 +54,10 @@ import { ProjectModal } from "../features/ProjectModal";
  * The active link is highlighted with a gradient pill via Framer Motion `layoutId`.
  */
 const links = [
-  ["/", "Dashboard", Home],
+  ["/", "Home", Home],
   ["/projects", "Projects", FolderKanban],
-  ["/timeline", "Gantt Timeline", Clock],
-  ["/board", "Workflow Board", LayoutDashboard],
-  ["/tasks", "All Work Items", ListChecks],
-  ["/team", "Team Matrix", Users],
+  ["/board", "Board", LayoutDashboard],
+  ["/tasks", "Tasks", ListChecks],
   ["/analytics", "Analytics", ChartNoAxesCombined],
   ["/settings", "Settings", Settings],
 ] as const;
@@ -73,27 +68,25 @@ const links = [
  * These strings are shown in the sticky header above the page content.
  */
 const routeTitles: Record<string, { title: string; subtitle: string }> = {
-  "/": { title: "Executive Dashboard", subtitle: "Portfolio metrics & delivery velocity" },
-  "/projects": { title: "Projects Hub", subtitle: "Strategic initiatives & roadmaps" },
-  "/timeline": { title: "Gantt & Delivery Schedule", subtitle: "Milestones, task durations & timelines" },
-  "/board": { title: "Kanban Board", subtitle: "Agile workflow & delivery pipeline" },
-  "/tasks": { title: "Task Manager", subtitle: "Filter, search & bulk operations" },
-  "/team": { title: "Team & Capacity", subtitle: "Workload distribution & online status" },
-  "/analytics": { title: "Analytics & Telemetry", subtitle: "Performance metrics, hours & budget burn" },
-  "/settings": { title: "Platform Settings", subtitle: "Preferences, theme & workspace options" },
+  "/": { title: "Home", subtitle: "Your portfolio overview" },
+  "/projects": { title: "Projects", subtitle: "Manage your initiatives" },
+  "/board": { title: "Board", subtitle: "Kanban workflow view" },
+  "/tasks": { title: "Tasks", subtitle: "All work items" },
+  "/analytics": { title: "Analytics", subtitle: "Performance insights" },
+  "/settings": { title: "Settings", subtitle: "Workspace configuration" },
 };
 
 /**
  * The collapsible left sidebar containing navigation, project switcher, and quick actions.
+ * Uses a deep dark indigo sidebar for a professional SaaS look (Notion/Linear/Linear-inspired).
  *
  * On desktop (lg+): Always visible as a sticky sidebar.
  * On mobile (<lg): Hidden off-screen (left: -80) and slides in via an `open` prop.
- *                   A semi-transparent backdrop overlay closes it when tapped.
  *
  * @param open         - Whether the mobile drawer is open
- * @param onClose      - Callback to close the mobile drawer (called on backdrop click, nav link click, X button)
- * @param onNewTask    - Opens the global TaskModal (wired to the "New Work Item" button)
- * @param onNewProject - Opens the global ProjectModal (wired to the "+ Project" link)
+ * @param onClose      - Callback to close the mobile drawer
+ * @param onNewTask    - Opens the global TaskModal
+ * @param onNewProject - Opens the global ProjectModal
  */
 function Sidebar({
   open,
@@ -119,7 +112,7 @@ function Sidebar({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
           />
         )}
       </AnimatePresence>
@@ -127,53 +120,51 @@ function Sidebar({
       <motion.aside
         initial={false}
         animate={{ x: open ? 0 : 0 }}
-        className={`fixed z-40 flex h-dvh w-72 flex-col p-4 lg:sticky lg:top-0 ${
-          open ? "left-0" : "-left-80 lg:left-0"
+        className={`fixed z-40 flex h-dvh w-64 flex-col lg:sticky lg:top-0 ${
+          open ? "left-0" : "-left-72 lg:left-0"
         }`}
       >
-        <div className="glass flex h-full flex-col rounded-[2rem] p-4 border border-white/20 dark:border-white/10">
+        {/* Dark sidebar panel */}
+        <div className="sidebar-surface flex h-full flex-col px-3 py-4">
+
           {/* Logo & Branding */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-                className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white shadow-xl shadow-indigo-500/25"
-              >
-                <Zap size={22} />
-              </motion.div>
+          <div className="flex items-center justify-between px-2 mb-6">
+            <div className="flex items-center gap-2.5">
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-indigo-400 to-violet-500 shadow-lg shadow-indigo-500/30">
+                <Layers size={16} className="text-white" />
+              </div>
               <div>
-                <b className="gradient-text text-xl font-black tracking-tight">Nexus PM</b>
-                <p className="text-[11px] font-semibold text-slate-500">Enterprise Project OS</p>
+                <span className="proflow-logo-text text-base font-black tracking-tight">ProFlow</span>
+                <p className="text-[9px] font-medium text-indigo-300/50 leading-none mt-0.5">Project Management</p>
               </div>
             </div>
             <button
               aria-label="Close navigation"
-              className="rounded-xl p-1 text-slate-500 hover:bg-slate-100 lg:hidden dark:hover:bg-slate-800"
+              className="rounded-lg p-1 text-indigo-300/50 hover:bg-white/10 hover:text-white lg:hidden transition"
               onClick={onClose}
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
 
-          {/* Quick Project Switcher pill */}
-          <div className="mt-4 rounded-2xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 p-3 border border-indigo-500/20">
-            <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-1">
-              <span>Scope Filter</span>
+          {/* Project Scope Switcher */}
+          <div className="mx-2 mb-4 rounded-lg bg-white/5 border border-white/8 p-2.5">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-indigo-300/60">Workspace</span>
               <button
                 onClick={onNewProject}
-                className="hover:text-indigo-700 flex items-center gap-0.5 text-[10px]"
+                className="flex items-center gap-0.5 text-[9px] font-bold text-indigo-300/60 hover:text-indigo-200 transition"
                 title="Create new project"
               >
-                <Plus size={12} /> Project
+                <Plus size={10} /> New
               </button>
             </div>
             <select
               value={selectedProjectId}
               onChange={(e) => setSelectedProject(e.target.value)}
-              className="w-full rounded-xl bg-white/70 dark:bg-slate-800/80 px-2.5 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none border border-black/5 dark:border-white/10"
+              className="w-full rounded-md bg-white/8 px-2 py-1.5 text-[11px] font-semibold text-indigo-100 outline-none border border-white/10 cursor-pointer"
             >
-              <option value="all">⚡ All Initiatives ({projects.length})</option>
+              <option value="all">All Projects ({projects.length})</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
                   [{p.key}] {p.name}
@@ -182,18 +173,24 @@ function Sidebar({
             </select>
           </div>
 
+          {/* Nav Section Label */}
+          <div className="px-2 mb-1">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-indigo-300/40">Navigation</span>
+          </div>
+
           {/* Nav links */}
-          <nav className="thin-scroll mt-4 flex-1 space-y-1 overflow-y-auto">
+          <nav className="thin-scroll flex-1 space-y-0.5 overflow-y-auto px-1">
             {links.map(([to, label, Icon]) => (
               <NavLink
                 key={to}
                 to={to}
                 onClick={onClose}
+                end={to === "/"}
                 className={({ isActive }) =>
-                  `relative flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-bold transition-all ${
+                  `relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-all ${
                     isActive
                       ? "text-white"
-                      : "text-slate-600 hover:bg-white/70 dark:text-slate-300 dark:hover:bg-slate-800/60"
+                      : "text-indigo-200/60 hover:text-indigo-100 hover:bg-white/6"
                   }`
                 }
               >
@@ -202,35 +199,45 @@ function Sidebar({
                     {isActive && (
                       <motion.span
                         layoutId="active-pill"
-                        className="absolute inset-0 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/25"
+                        className="absolute inset-0 rounded-lg bg-indigo-500/25 ring-1 ring-indigo-400/20"
                       />
                     )}
-                    <Icon className="relative" size={17} />
+                    <Icon
+                      className={`relative shrink-0 ${isActive ? "text-indigo-300" : "text-indigo-300/40"}`}
+                      size={15}
+                    />
                     <span className="relative">{label}</span>
+                    {isActive && (
+                      <span className="relative ml-auto h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                    )}
                   </>
                 )}
               </NavLink>
             ))}
           </nav>
 
-          {/* Quick Action Buttons */}
-          <div className="space-y-2 pt-2 border-t border-black/5 dark:border-white/5">
-            <Button
+          {/* New Task Button */}
+          <div className="mx-1 mt-4 mb-3">
+            <button
               onClick={onNewTask}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/20 py-2.5 text-xs font-bold"
+              className="ripple w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 py-2.5 text-[12px] font-semibold text-white shadow-lg shadow-indigo-500/30 transition-colors"
             >
-              <Plus size={16} />
-              <span>New Work Item</span>
-            </Button>
+              <Plus size={15} />
+              <span>New Task</span>
+            </button>
           </div>
 
+          {/* Divider */}
+          <div className="mx-2 border-t border-white/8 mb-3" />
+
           {/* User Profile */}
-          <div className="mt-3 flex items-center gap-3 rounded-2xl bg-white/70 p-2.5 shadow-xs dark:bg-slate-800/70 border border-black/5 dark:border-white/5">
+          <div className="mx-1 flex items-center gap-2.5 rounded-lg p-2 hover:bg-white/6 transition cursor-pointer group">
             <Avatar name="KT" />
             <div className="min-w-0 flex-1">
-              <b className="block truncate text-xs font-bold">Krishna Teja</b>
-              <p className="truncate text-[10px] text-slate-400">Engineering Lead</p>
+              <b className="block truncate text-[12px] font-semibold text-indigo-100">Krishna Teja</b>
+              <p className="truncate text-[10px] text-indigo-300/50">Engineering Lead</p>
             </div>
+            <Settings size={13} className="text-indigo-300/30 group-hover:text-indigo-300/70 transition shrink-0" />
           </div>
         </div>
       </motion.aside>
@@ -278,11 +285,13 @@ export function AppLayout() {
       };
     } else {
       currentMeta = {
-        title: "Nexus PM",
-        subtitle: "Enterprise Project OS",
+        title: "ProFlow",
+        subtitle: "Professional Project Management",
       };
     }
   }
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <div className="min-h-dvh">
@@ -296,41 +305,54 @@ export function AppLayout() {
           onNewProject={() => setProjectModalOpen(true)}
         />
 
-        <main className="min-w-0 flex-1 p-3 lg:p-6">
-          <header className="glass sticky top-3 z-20 mb-6 flex items-center justify-between gap-3 rounded-3xl px-5 py-3.5 border border-white/20 dark:border-white/10">
+        <main className="min-w-0 flex-1 p-3 lg:p-5">
+          {/* Professional Topbar */}
+          <header className="glass sticky top-3 z-20 mb-5 flex items-center justify-between gap-3 rounded-2xl px-5 py-3 border border-white/30 dark:border-white/8">
             <div className="flex items-center gap-3">
               <button
                 aria-label="Open navigation menu"
-                className="rounded-xl p-2 text-slate-600 hover:bg-slate-100 lg:hidden dark:text-slate-300 dark:hover:bg-slate-800"
+                className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 lg:hidden dark:text-slate-400 dark:hover:bg-slate-800 transition"
                 onClick={() => setMobile(true)}
               >
                 <Menu size={20} />
               </button>
 
               <div>
-                <h2 className="text-xl font-black text-slate-900 dark:text-white leading-tight">
+                <h2 className="text-[15px] font-bold text-slate-900 dark:text-white leading-tight">
                   {currentMeta.title}
                 </h2>
-                <p className="hidden text-xs text-slate-500 sm:block">
+                <p className="hidden text-[11px] text-slate-400 sm:block leading-tight mt-0.5">
                   {currentMeta.subtitle}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
+              {/* Theme Toggle */}
+              <button
+                aria-label="Toggle color theme"
+                onClick={toggle}
+                className="rounded-xl bg-slate-100 dark:bg-slate-800 p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
+              >
+                {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+              </button>
+
+              {/* Notifications */}
               <div className="relative">
                 <button
                   aria-label="View notifications"
                   onClick={() => setNotif(!notif)}
-                  className="relative rounded-2xl bg-white/80 p-2.5 shadow-xs ring-1 ring-slate-200/70 transition hover:bg-white dark:bg-slate-800/80 dark:ring-white/10 dark:hover:bg-slate-800"
+                  className="relative rounded-xl bg-slate-100 dark:bg-slate-800 p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
                 >
-                  <Bell size={18} />
-                  {notifications.some((n) => !n.read) && (
+                  <Bell size={16} />
+                  {unreadCount > 0 && (
                     <motion.span
-                      animate={{ scale: [1, 1.25, 1] }}
-                      transition={{ repeat: Infinity, duration: 1.3 }}
-                      className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900"
-                    />
+                      animate={{ scale: [1, 1.3, 1] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                      className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white"
+                    >
+                      {unreadCount}
+                    </motion.span>
                   )}
                 </button>
 
@@ -339,32 +361,30 @@ export function AppLayout() {
                 )}
               </div>
 
-              <button
-                aria-label="Toggle color theme"
-                onClick={toggle}
-                className="rounded-2xl bg-white/80 p-2.5 shadow-xs ring-1 ring-slate-200/70 transition hover:bg-white dark:bg-slate-800/80 dark:ring-white/10 dark:hover:bg-slate-800"
-              >
-                {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-              </button>
+              {/* Divider */}
+              <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
 
+              {/* New Project */}
               <Button
                 onClick={() => setProjectModalOpen(true)}
                 variant="glass"
-                className="hidden md:flex items-center gap-1.5 rounded-2xl px-3.5 py-2 text-xs font-bold border border-black/10 dark:border-white/10"
+                className="hidden md:flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[12px] font-semibold border border-slate-200 dark:border-slate-700"
               >
-                <FolderKanban size={15} />
+                <FolderKanban size={14} />
                 <span>New Project</span>
               </Button>
 
+              {/* New Task */}
               <Button
                 onClick={() => setTaskModalOpen(true)}
-                className="flex items-center gap-1.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-indigo-500/20"
+                className="flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-md shadow-indigo-500/25 transition-colors"
               >
-                <Plus size={16} />
+                <Plus size={14} />
                 <span>Add Task</span>
               </Button>
 
-              <div className="hidden pl-1 sm:block">
+              {/* Avatar */}
+              <div className="hidden pl-0.5 sm:block">
                 <Avatar name="KT" />
               </div>
             </div>
@@ -372,9 +392,9 @@ export function AppLayout() {
 
           <motion.div
             key={location.pathname}
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.2 }}
           >
             <Outlet />
           </motion.div>
