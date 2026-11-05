@@ -3,3 +3,8 @@ dist/
 .env
 *.tsbuildinfo
 todolist/
+*.db
+*.db-shm
+*.db-wal
+server/node_modules/
+

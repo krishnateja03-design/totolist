@@ -1,5 +1,8 @@
+import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./layouts/AppLayout";
+import { useAppStore } from "./store/useAppStore";
+import { api } from "./utils/api";
 
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
@@ -12,6 +15,17 @@ import Settings from "./pages/Settings";
 import Team from "./pages/Team";
 
 export default function App() {
+  const syncWithBackend = useAppStore((s) => s.syncWithBackend);
+  const projects = useAppStore((s) => s.projects);
+  const tasks = useAppStore((s) => s.tasks);
+
+  useEffect(() => {
+    // Seed backend database if empty, then sync
+    api.seedIfEmpty(projects, tasks).then(() => {
+      syncWithBackend();
+    });
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

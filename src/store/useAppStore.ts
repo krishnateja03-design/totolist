@@ -39,6 +39,7 @@ import {
   Task,
   Theme,
 } from "../types";
+import { api } from "../utils/api";
 
 /**
  * The complete shape of the global application store.
@@ -76,6 +77,9 @@ type Store = {
 
   /** Sets the active project scope filter. Pass "all" to see all projects. */
   setSelectedProject: (projectId: string | "all") => void;
+
+  /** Syncs local state with backend SQLite database */
+  syncWithBackend: () => Promise<void>;
 
   // ─── Project Actions ──────────────────────────────────────────────────────
 
@@ -237,6 +241,22 @@ export const useAppStore = create<Store>()(
 
       setSelectedProject: (selectedProjectId) => set({ selectedProjectId }),
 
+      syncWithBackend: async () => {
+        try {
+          const backendProjects = await api.getProjects();
+          const backendTasks = await api.getTasks();
+
+          if (backendProjects.length > 0 || backendTasks.length > 0) {
+            set({
+              projects: backendProjects,
+              tasks: backendTasks,
+            });
+          }
+        } catch {
+          // Server offline; state safely runs in local fallback mode
+        }
+      },
+
       // ─── Project CRUD ───────────────────────────────────────────────────
 
       addProject: (project) =>
@@ -255,6 +275,7 @@ export const useAppStore = create<Store>()(
               },
             ],
           };
+          api.createProject(newProject).catch(() => {});
           return {
             // Prepend the new project so it appears first in the list
             projects: [newProject, ...s.projects],
@@ -274,20 +295,26 @@ export const useAppStore = create<Store>()(
         }),
 
       updateProject: (project) =>
-        set((s) => ({
-          // Replace only the project matching by ID; leave all others untouched
-          projects: s.projects.map((p) => (p.id === project.id ? project : p)),
-        })),
+        set((s) => {
+          api.updateProject(project.id, project).catch(() => {});
+          return {
+            // Replace only the project matching by ID; leave all others untouched
+            projects: s.projects.map((p) => (p.id === project.id ? project : p)),
+          };
+        }),
 
       deleteProject: (id) =>
-        set((s) => ({
-          // Remove the project
-          projects: s.projects.filter((p) => p.id !== id),
-          // Cascade-delete all tasks that belonged to this project
-          tasks: s.tasks.filter((t) => t.projectId !== id),
-          // If the deleted project was selected, reset scope to "all"
-          selectedProjectId: s.selectedProjectId === id ? "all" : s.selectedProjectId,
-        })),
+        set((s) => {
+          api.deleteProject(id).catch(() => {});
+          return {
+            // Remove the project
+            projects: s.projects.filter((p) => p.id !== id),
+            // Cascade-delete all tasks that belonged to this project
+            tasks: s.tasks.filter((t) => t.projectId !== id),
+            // If the deleted project was selected, reset scope to "all"
+            selectedProjectId: s.selectedProjectId === id ? "all" : s.selectedProjectId,
+          };
+        }),
 
       toggleMilestone: (projectId, milestoneId) =>
         set((s) => ({
@@ -360,6 +387,7 @@ export const useAppStore = create<Store>()(
             loggedHours: task.loggedHours ?? 0,       // Default: no hours logged yet
             estimatedHours: task.estimatedHours ?? 4, // Default: 4h estimate
           };
+          api.createTask(newTask).catch(() => {});
           return {
             // Prepend so the newest task appears first in tables/boards
             tasks: [newTask, ...s.tasks],
@@ -379,28 +407,44 @@ export const useAppStore = create<Store>()(
         }),
 
       updateTask: (task) =>
-        set((s) => ({
-          tasks: s.tasks.map((t) => (t.id === task.id ? task : t)),
-        })),
+        set((s) => {
+          api.updateTask(task.id, task).catch(() => {});
+          return {
+            tasks: s.tasks.map((t) => (t.id === task.id ? task : t)),
+          };
+        }),
 
       deleteTask: (id) =>
-        set((s) => ({
-          tasks: s.tasks.filter((t) => t.id !== id),
-        })),
+        set((s) => {
+          api.deleteTask(id).catch(() => {});
+          return {
+            tasks: s.tasks.filter((t) => t.id !== id),
+          };
+        }),
 
       moveTask: (id, status) =>
-        set((s) => ({
-          tasks: s.tasks.map((t) =>
-            t.id === id
-              ? {
-                  ...t,
-                  status,
-                  // Auto-complete progress when task is moved to "done"
-                  progress: status === "done" ? 100 : t.progress,
-                }
-              : t,
-          ),
-        })),
+        set((s) => {
+          const target = s.tasks.find((t) => t.id === id);
+          if (target) {
+            api.updateTask(id, {
+              ...target,
+              status,
+              progress: status === "done" ? 100 : target.progress,
+            }).catch(() => {});
+          }
+          return {
+            tasks: s.tasks.map((t) =>
+              t.id === id
+                ? {
+                    ...t,
+                    status,
+                    // Auto-complete progress when task is moved to "done"
+                    progress: status === "done" ? 100 : t.progress,
+                  }
+                : t,
+            ),
+          };
+        }),
 
       logTaskHours: (id, additionalHours) =>
         set((s) => ({
