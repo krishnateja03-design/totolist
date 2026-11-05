@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Clock, Folder } from "lucide-react";
+import { X, Folder } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../components/Button";
 import { useAppStore } from "../store/useAppStore";
@@ -26,11 +26,7 @@ export function TaskModal({
   const [assignees, setAssignees] = useState("KT");
   const [dueDate, setDueDate] = useState("");
   const [estimatedHours, setEstimatedHours] = useState(8);
-  const [loggedHours, setLoggedHours] = useState(0);
   const [tags, setTags] = useState("");
-  const [progress, setProgress] = useState(10);
-  const [comments, setComments] = useState(0);
-  const [attachments, setAttachments] = useState(0);
 
   function resetForm() {
     setTitle("");
@@ -40,11 +36,7 @@ export function TaskModal({
     setAssignees("KT");
     setDueDate("");
     setEstimatedHours(8);
-    setLoggedHours(0);
     setTags("");
-    setProgress(10);
-    setComments(0);
-    setAttachments(0);
   }
 
   function submit() {
@@ -58,20 +50,18 @@ export function TaskModal({
       priority,
       assignees: assignees
         .split(",")
-        .map((a) => a.trim())
+        .map((a) => a.trim().toUpperCase())
         .filter(Boolean),
-      dueDate: dueDate
-        ? new Date(dueDate).toISOString().split("T")[0]
-        : new Date().toISOString().split("T")[0],
-      estimatedHours: Number(estimatedHours) || 4,
-      loggedHours: Number(loggedHours) || 0,
-      comments,
-      attachments,
-      progress,
+      dueDate: dueDate || new Date().toISOString().split("T")[0],
+      estimatedHours: Number(estimatedHours) || 8,
+      loggedHours: 0,
       tags: tags
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean),
+      progress: status === "done" ? 100 : 0,
+      comments: 0,
+      attachments: 0,
     });
 
     resetForm();
@@ -82,46 +72,46 @@ export function TaskModal({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4 backdrop-blur-xs"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.94, y: 20 }}
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 20 }}
-            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/20 bg-white/95 p-6 shadow-2xl dark:border-white/10 dark:bg-slate-900/95"
+            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+            className="w-full max-w-lg rounded-xl border border-slate-200/80 bg-white p-6 shadow-2xl dark:border-white/8 dark:bg-slate-900"
           >
-            <div className="mb-5 flex items-center justify-between border-b border-black/5 pb-4 dark:border-white/10">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 dark:border-white/5">
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">
                   Create Work Item
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Assign to a project, track estimated hours, and set target timeline
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Assign to project, set effort and timeline
                 </p>
               </div>
-
               <button
                 onClick={onClose}
-                className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 transition"
                 type="button"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               {/* Project selector */}
               <div>
-                <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  <Folder className="h-3.5 w-3.5 text-indigo-500" /> Assigned Project
+                <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  <Folder className="h-3.5 w-3.5 text-indigo-500" /> Project
                 </label>
                 <select
                   value={projectId}
                   onChange={(e) => setProjectId(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-slate-900 dark:border-white/10 dark:bg-slate-800/80 dark:text-white focus:outline-none focus:ring-4 focus:ring-indigo-500/10"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:border-indigo-500"
                 >
                   <option value="">No Project (General Work Item)</option>
                   {projects.map((p) => (
@@ -133,39 +123,55 @@ export function TaskModal({
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Task Title *
                 </label>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Implement Webhook Dispatcher with exponential backoff"
-                  className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
+                  placeholder="e.g. Implement webhook retry dispatcher"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Scope & Requirements
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Technical acceptance criteria, user story, API specifications..."
-                  rows={3}
-                  className="w-full resize-none rounded-2xl border border-slate-200 bg-white/50 px-4 py-2.5 text-sm text-slate-900 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
+                  placeholder="Acceptance criteria, technical notes..."
+                  rows={2}
+                  className="w-full resize-none rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500"
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Priority
+                  </label>
+                  <select
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value as Priority)}
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                     Status
                   </label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as Status)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 p-2.5 text-xs font-semibold text-slate-900 dark:border-white/10 dark:bg-slate-800/80 dark:text-white"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                   >
                     <option value="backlog">Backlog</option>
                     <option value="planned">Planned</option>
@@ -174,124 +180,72 @@ export function TaskModal({
                     <option value="done">Done</option>
                   </select>
                 </div>
-
-                <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Priority
-                  </label>
-                  <select
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value as Priority)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 p-2.5 text-xs font-semibold text-slate-900 dark:border-white/10 dark:bg-slate-800/80 dark:text-white"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
-                </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Assignees (Initials e.g. KT, SK)
+                  <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Assignee (Initials)
                   </label>
                   <input
                     value={assignees}
                     onChange={(e) => setAssignees(e.target.value)}
                     placeholder="KT, AM"
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2.5 text-sm outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Due Date
-                  </label>
-                  <input
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2.5 text-sm outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Time Tracking Estimates */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    <Clock className="h-3.5 w-3.5 text-indigo-500" /> Estimated Hours
+                  <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Estimated Hours
                   </label>
                   <input
                     type="number"
                     min="1"
                     value={estimatedHours}
                     onChange={(e) => setEstimatedHours(Number(e.target.value))}
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2 text-sm font-semibold outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    <Clock className="h-3.5 w-3.5 text-emerald-500" /> Initial Logged Hours
+                  <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Target Date
                   </label>
                   <input
-                    type="number"
-                    min="0"
-                    value={loggedHours}
-                    onChange={(e) => setLoggedHours(Number(e.target.value))}
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2 text-sm font-semibold outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Tags (Comma separated)
                 </label>
                 <input
                   value={tags}
                   onChange={(e) => setTags(e.target.value)}
                   placeholder="e.g. Backend, API, Performance"
-                  className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2.5 text-sm outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
+                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                 />
               </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Progress
-                  </label>
-                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                    {progress}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={progress}
-                  onChange={(e) => setProgress(Number(e.target.value))}
-                  className="w-full accent-indigo-600 cursor-pointer"
-                />
-              </div>
-
-              <div className="mt-6 flex items-center justify-end gap-3 border-t border-black/5 pt-4 dark:border-white/10">
+              <div className="mt-5 flex items-center justify-end gap-2.5 border-t border-slate-100 pt-3.5 dark:border-white/5">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-2xl px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+                  className="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition"
                 >
                   Cancel
                 </button>
                 <Button
                   onClick={submit}
-                  variant="gradient"
-                  className="rounded-2xl px-6 py-2.5"
+                  className="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition"
                 >
-                  Create Work Item
+                  Create Task
                 </Button>
               </div>
             </div>

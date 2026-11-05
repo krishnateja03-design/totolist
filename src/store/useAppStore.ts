@@ -38,6 +38,7 @@ import {
   Status,
   Task,
   Theme,
+  User,
 } from "../types";
 import { api } from "../utils/api";
 
@@ -70,6 +71,11 @@ type Store = {
   columns: typeof columns;
   notifications: Notification[];
   goals: Goal[];
+  currentUser: User | null;
+
+  // ─── Auth Actions ─────────────────────────────────────────────────────────
+  setCurrentUser: (user: User | null) => void;
+  logout: () => void;
 
   // ─── Theme Actions ────────────────────────────────────────────────────────
   /** Toggles between "light" and "dark" theme and applies the class to <html> */
@@ -227,6 +233,10 @@ export const useAppStore = create<Store>()(
       columns,                        // Static Kanban column definitions
       notifications,                  // [] by default
       goals,                          // [] by default
+      currentUser: null,
+
+      setCurrentUser: (currentUser) => set({ currentUser }),
+      logout: () => set({ currentUser: null }),
 
       // ─── Theme ─────────────────────────────────────────────────────────
 

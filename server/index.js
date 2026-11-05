@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import crypto from 'crypto';
 import { db, initDb } from './db.js';
 
 initDb();
@@ -9,6 +10,88 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+
+// Built-in secure password hashing using Node crypto (scrypt)
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, stored) {
+  const [salt, key] = stored.split(':');
+  if (!salt || !key) return false;
+  const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+  return crypto.timingSafeEqual(Buffer.from(key, 'hex'), Buffer.from(hash, 'hex'));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTH API
+// ─────────────────────────────────────────────────────────────────────────────
+
+app.post('/api/auth/signup', (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email and password are required' });
+    }
+
+    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase().trim());
+    if (existing) {
+      return res.status(400).json({ error: 'An account with this email already exists' });
+    }
+
+    const id = `usr-${crypto.randomUUID().slice(0, 8)}`;
+    const passwordHash = hashPassword(password);
+    const initials = name
+      .split(' ')
+      .map((w) => w[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+
+    db.prepare(`
+      INSERT INTO users (id, name, email, passwordHash, avatar, role)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(id, name, email.toLowerCase().trim(), passwordHash, initials, 'Project Lead');
+
+    const user = { id, name, email: email.toLowerCase().trim(), avatar: initials, role: 'Project Lead' };
+    res.status(201).json({ user, token: `token-${id}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/auth/login', (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const userRow = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase().trim());
+    if (!userRow) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const valid = verifyPassword(password, userRow.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    const user = {
+      id: userRow.id,
+      name: userRow.name,
+      email: userRow.email,
+      avatar: userRow.avatar,
+      role: userRow.role,
+    };
+
+    res.json({ user, token: `token-${userRow.id}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Helper parsers for JSON columns
 function formatProject(row) {

@@ -1,13 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  FolderPlus,
-  Sparkles,
-  DollarSign,
-  Calendar,
-  Layers,
-  Flag,
-} from "lucide-react";
+import { X, FolderPlus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../components/Button";
 import { useAppStore } from "../store/useAppStore";
@@ -32,12 +24,6 @@ const categoryOptions: ProjectCategory[] = [
   "Operations",
 ];
 
-const healthOptions: { value: ProjectHealth; label: string; dot: string }[] = [
-  { value: "on-track", label: "On Track", dot: "bg-emerald-500" },
-  { value: "at-risk", label: "At Risk", dot: "bg-amber-500" },
-  { value: "delayed", label: "Delayed", dot: "bg-rose-500" },
-];
-
 export function ProjectModal({
   open,
   onClose,
@@ -50,76 +36,56 @@ export function ProjectModal({
   const [name, setName] = useState("");
   const [key, setKey] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<ProjectCategory>("Product");
+  const [category, setCategory] = useState<ProjectCategory>("Engineering");
   const [health, setHealth] = useState<ProjectHealth>("on-track");
-  const [status, setStatus] = useState<"active" | "planning" | "completed" | "on-hold">("active");
   const [lead, setLead] = useState("Krishna Teja");
   const [color, setColor] = useState(colorPresets[0]);
-  const [targetDays, setTargetDays] = useState(30);
   const [budgetAllocated, setBudgetAllocated] = useState("25000");
-  const [initialMilestone, setInitialMilestone] = useState("Architecture Design & Kickoff");
-
-  function handleNameChange(val: string) {
-    setName(val);
-    if (!key || key.length <= 4) {
-      const generated = val
-        .split(" ")
-        .map((w) => w[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 4);
-      if (generated) setKey(generated);
-    }
-  }
 
   function resetForm() {
     setName("");
     setKey("");
     setDescription("");
-    setCategory("Product");
+    setCategory("Engineering");
     setHealth("on-track");
-    setStatus("active");
+    setLead("Krishna Teja");
     setColor(colorPresets[0]);
     setBudgetAllocated("25000");
-    setInitialMilestone("Architecture Design & Kickoff");
   }
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
+  function submit() {
     if (!name.trim()) return;
 
-    const now = new Date();
-    const targetDate = new Date(now);
-    targetDate.setDate(targetDate.getDate() + Number(targetDays || 30));
-
-    const allocated = Number(budgetAllocated) || 0;
+    const projectKey = (key.trim() || name.slice(0, 3)).toUpperCase();
 
     addProject({
       name: name.trim(),
-      key: key.trim().toUpperCase() || "PRJ",
-      description: description.trim() || "Multi-disciplinary team initiative.",
-      color,
-      icon: "Folder",
+      key: projectKey,
+      description: description.trim() || "Strategic initiative.",
       category,
       health,
-      status,
-      lead,
-      startDate: now.toISOString().split("T")[0],
-      targetDate: targetDate.toISOString().split("T")[0],
+      status: "active",
+      lead: lead.trim() || "Lead",
+      color,
+      icon: "📁",
+      startDate: new Date().toISOString().split("T")[0],
+      targetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
       budget: {
-        allocated,
+        allocated: Number(budgetAllocated) || 0,
         spent: 0,
       },
-      milestones: initialMilestone.trim()
-        ? [
-            {
-              id: `m-${Date.now()}`,
-              title: initialMilestone.trim(),
-              dueDate: targetDate.toISOString().split("T")[0],
-              completed: false,
-            },
-          ]
-        : [],
+      milestones: [
+        {
+          id: `m-${Date.now()}`,
+          title: "Initial Kickoff & Requirements",
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split("T")[0],
+          completed: false,
+        },
+      ],
       notes: [],
     });
 
@@ -130,229 +96,157 @@ export function ProjectModal({
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
+        <motion.div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4 backdrop-blur-xs"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-md"
-          />
-
-          {/* Modal Card */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            initial={{ opacity: 0, scale: 0.96, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-white/20 bg-white/95 p-6 shadow-2xl dark:border-white/10 dark:bg-slate-900/95 max-h-[92vh] overflow-y-auto"
+            exit={{ opacity: 0, scale: 0.96, y: 10 }}
+            className="w-full max-w-lg rounded-xl border border-slate-200/80 bg-white p-6 shadow-2xl dark:border-white/8 dark:bg-slate-900"
           >
-            {/* Header Accent Glow */}
-            <div
-              className="absolute -top-24 left-1/2 h-36 w-72 -translate-x-1/2 rounded-full opacity-40 blur-3xl pointer-events-none"
-              style={{ backgroundColor: color }}
-            />
-
-            <div className="relative flex items-center justify-between border-b border-black/5 pb-4 dark:border-white/10">
-              <div className="flex items-center gap-3">
-                <div
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl text-white shadow-lg shadow-indigo-500/20"
-                  style={{ backgroundColor: color }}
-                >
-                  <FolderPlus className="h-6 w-6" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                    Create New Project
-                  </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Define scope, timeline, budget, and strategic goals
-                  </p>
-                </div>
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4 dark:border-white/5">
+              <div>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                  Launch New Project
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Set scope, project key, and department discipline
+                </p>
               </div>
               <button
                 onClick={onClose}
-                className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 transition"
+                type="button"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            <form onSubmit={submit} className="relative mt-5 space-y-4">
-              {/* Project Name & Key */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
-                <div className="sm:col-span-3">
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <div className="space-y-3.5">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2">
+                  <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                     Project Name *
                   </label>
                   <input
-                    type="text"
-                    required
                     value={name}
-                    onChange={(e) => handleNameChange(e.target.value)}
-                    placeholder="e.g. NextGen Mobile Banking SDK"
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (!key) {
+                        setKey(e.target.value.slice(0, 3).toUpperCase());
+                      }
+                    }}
+                    placeholder="e.g. NextGen Mobile Portal"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Key / Prefix
+                  <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Key (Prefix)
                   </label>
                   <input
-                    type="text"
-                    maxLength={5}
                     value={key}
                     onChange={(e) => setKey(e.target.value.toUpperCase())}
-                    placeholder="SDK"
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 px-3 py-2.5 text-center text-sm font-bold tracking-wider text-indigo-600 uppercase focus:border-indigo-500 focus:outline-none dark:border-white/10 dark:bg-slate-800/60 dark:text-indigo-400"
+                    placeholder="NMP"
+                    maxLength={5}
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-indigo-500"
                   />
                 </div>
               </div>
 
-              {/* Description */}
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Mission & Scope
+                <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Description
                 </label>
                 <textarea
-                  rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Primary outcomes, deliverables, and architecture considerations..."
-                  className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
+                  placeholder="Goals, team deliverables, and strategic purpose..."
+                  rows={2}
+                  className="w-full resize-none rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500"
                 />
               </div>
 
-              {/* Category, Status, Health */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    <Layers className="h-3.5 w-3.5 text-indigo-500" /> Category
+                  <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Discipline
                   </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value as ProjectCategory)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 px-3 py-2.5 text-xs font-semibold text-slate-800 dark:border-white/10 dark:bg-slate-800/80 dark:text-white"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                   >
-                    {categoryOptions.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
+                    {categoryOptions.map((c) => (
+                      <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    <Flag className="h-3.5 w-3.5 text-emerald-500" /> Health
-                  </label>
-                  <select
-                    value={health}
-                    onChange={(e) => setHealth(e.target.value as ProjectHealth)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 px-3 py-2.5 text-xs font-semibold text-slate-800 dark:border-white/10 dark:bg-slate-800/80 dark:text-white"
-                  >
-                    {healthOptions.map((h) => (
-                      <option key={h.value} value={h.value}>
-                        {h.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
                     Lead
                   </label>
                   <input
-                    type="text"
                     value={lead}
                     onChange={(e) => setLead(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 px-3 py-2.5 text-xs font-medium text-slate-800 dark:border-white/10 dark:bg-slate-800/80 dark:text-white"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                   />
                 </div>
-              </div>
 
-              {/* Budget & Target Days */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    <DollarSign className="h-3.5 w-3.5 text-emerald-500" /> Total Budget ($)
+                  <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Budget ($)
                   </label>
                   <input
                     type="number"
-                    step="1000"
                     value={budgetAllocated}
                     onChange={(e) => setBudgetAllocated(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-slate-900 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    <Calendar className="h-3.5 w-3.5 text-indigo-500" /> Target Duration (Days)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={targetDays}
-                    onChange={(e) => setTargetDays(Number(e.target.value))}
-                    className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2.5 text-sm font-semibold text-slate-900 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none"
                   />
                 </div>
               </div>
 
-              {/* Initial Milestone */}
               <div>
-                <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  <Sparkles className="h-3.5 w-3.5 text-amber-500" /> First Key Milestone
+                <label className="mb-1.5 block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Theme Accent
                 </label>
-                <input
-                  type="text"
-                  value={initialMilestone}
-                  onChange={(e) => setInitialMilestone(e.target.value)}
-                  placeholder="e.g. Prototype demonstration to stakeholders"
-                  className="w-full rounded-2xl border border-slate-200 bg-white/50 px-4 py-2 text-xs font-medium text-slate-900 dark:border-white/10 dark:bg-slate-800/60 dark:text-white"
-                />
-              </div>
-
-              {/* Project Color Badge Picker */}
-              <div>
-                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Project Brand Color
-                </label>
-                <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   {colorPresets.map((c) => (
                     <button
                       key={c}
                       type="button"
                       onClick={() => setColor(c)}
-                      className={`h-7 w-7 rounded-full transition-transform ${
-                        color === c
-                          ? "ring-4 ring-offset-2 scale-110 ring-indigo-500 dark:ring-offset-slate-900"
-                          : "hover:scale-105"
-                      }`}
+                      className={`h-6 w-6 rounded-full transition-transform ${color === c ? "scale-125 ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-900" : "hover:scale-110"}`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="mt-6 flex items-center justify-end gap-3 border-t border-black/5 pt-4 dark:border-white/10">
+              <div className="mt-5 flex items-center justify-end gap-2.5 border-t border-slate-100 pt-3.5 dark:border-white/5">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-2xl px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+                  className="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition"
                 >
                   Cancel
                 </button>
-                <Button type="submit" variant="gradient" className="rounded-2xl px-6 py-2.5">
+                <Button
+                  onClick={submit}
+                  className="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition"
+                >
                   Launch Project
                 </Button>
               </div>
-            </form>
+            </div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

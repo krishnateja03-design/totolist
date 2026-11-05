@@ -52,6 +52,16 @@ export function initDb() {
       FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE SET NULL
     );
 
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      passwordHash TEXT NOT NULL,
+      avatar TEXT,
+      role TEXT DEFAULT 'Member',
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS notifications (
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,

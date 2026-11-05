@@ -1,8 +1,10 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./layouts/AppLayout";
 import { useAppStore } from "./store/useAppStore";
 import { api } from "./utils/api";
+import { LandingPage } from "./pages/LandingPage";
+import { AuthModal } from "./features/AuthModal";
 
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
@@ -18,6 +20,8 @@ export default function App() {
   const syncWithBackend = useAppStore((s) => s.syncWithBackend);
   const projects = useAppStore((s) => s.projects);
   const tasks = useAppStore((s) => s.tasks);
+  const currentUser = useAppStore((s) => s.currentUser);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
     // Seed backend database if empty, then sync
@@ -25,6 +29,16 @@ export default function App() {
       syncWithBackend();
     });
   }, []);
+
+  // When not logged in, present high-converting professional product landing page
+  if (!currentUser) {
+    return (
+      <>
+        <LandingPage onOpenAuth={() => setAuthModalOpen(true)} />
+        <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+      </>
+    );
+  }
 
   return (
     <BrowserRouter>

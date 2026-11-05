@@ -1,6 +1,45 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = '/api';
 
 export const api = {
+  // Auth
+  async signup(name: string, email: string, password: string) {
+    const res = await fetch(`${API_BASE}/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password }),
+    });
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(
+        'Backend server is not running on port 5000. Please run "npm run server" in your terminal.'
+      );
+    }
+    if (!res.ok) throw new Error(data.error || 'Failed to sign up');
+    return data;
+  },
+
+  async login(email: string, password: string) {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(
+        'Backend server is not running on port 5000. Please run "npm run server" in your terminal.'
+      );
+    }
+    if (!res.ok) throw new Error(data.error || 'Failed to log in');
+    return data;
+  },
+
   // Projects
   async getProjects() {
     const res = await fetch(`${API_BASE}/projects`);

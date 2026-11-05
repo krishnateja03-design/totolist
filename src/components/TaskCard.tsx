@@ -72,67 +72,69 @@ export function TaskCard({ task }: { task: Task }) {
   return (
     <motion.div
       layout // Animates position changes when tasks move between columns
-      whileHover={{ scale: 1.015, y: -3 }} // Subtle lift on hover for tactile feedback
-      className="soft-card group relative rounded-3xl p-4 transition-all duration-200 border border-black/5 dark:border-white/10"
+      whileHover={{ scale: 1.01, y: -2 }} // Subtle lift on hover for tactile feedback
+      className="soft-card group relative rounded-xl p-3.5 transition-all duration-200 border border-slate-200/80 dark:border-white/8 hover:shadow-md"
     >
       {/* ── Card Header: Priority + Project Badge + Title + Delete Button ── */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           {/* Priority and project badges row */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Priority badge – color determined by priorityStyles utility */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {/* Priority badge */}
             <span
-              className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${priorityStyles[task.priority]}`}
+              className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${priorityStyles[task.priority]}`}
             >
               {task.priority}
             </span>
 
-            {/* Project key badge – only shown if task belongs to a project */}
+            {/* Project key badge */}
             {project && (
               <span
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold text-white shadow-xs"
-                style={{ backgroundColor: project.color }} // Uses project's hex color
+                className="inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-black text-white"
+                style={{ backgroundColor: project.color }}
               >
                 {project.key}
               </span>
             )}
           </div>
 
-          {/* Task title – clamped to 2 lines to maintain card height consistency */}
-          <h3 className="mt-2.5 font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug">
+          {/* Task title */}
+          <h3 className="mt-2 text-xs font-semibold text-slate-900 dark:text-white line-clamp-2 leading-snug">
             {task.title}
           </h3>
-          {/* Task description – also clamped to 2 lines */}
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-            {task.description}
-          </p>
+          {/* Task description */}
+          {task.description && (
+            <p className="mt-1 text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+              {task.description}
+            </p>
+          )}
         </div>
 
-        {/* Delete button – hidden until card is hovered (group-hover opacity trick) */}
+        {/* Delete button */}
         <button
           aria-label="Delete task"
           onClick={(e) => {
-            e.stopPropagation(); // Prevent drag from activating during delete click
+            e.stopPropagation();
             del(task.id);
           }}
-          className="rounded-xl p-1.5 text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
+          className="rounded-lg p-1 text-slate-400 opacity-0 transition group-hover:opacity-100 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-950/30"
         >
-          <Trash2 size={15} />
+          <Trash2 size={13} />
         </button>
       </div>
 
-      {/* ── Completion Progress Bar ───────────────────────────────────────── */}
-      <div className="mt-3.5">
-        {/* Label row: "Completion" on the left, percentage on the right */}
-        <div className="flex justify-between items-center text-[11px] font-semibold text-slate-400 mb-1">
-          <span>Completion</span>
-          <span className="text-slate-700 dark:text-slate-300">{task.progress}%</span>
+      {/* ── Completion Progress Bar ── */}
+      <div className="mt-2.5">
+        <div className="flex justify-between items-center text-[10px] font-medium text-slate-400 mb-1">
+          <span>Progress</span>
+          <span className="font-semibold text-slate-700 dark:text-slate-300">{task.progress}%</span>
         </div>
-        {/* Animated progress bar – auto-fills to 100% when task is moved to "done" */}
-        <ProgressBar
-          value={task.progress}
-          gradient="from-cyan-500 to-indigo-500"
-        />
+        <div className="h-1 w-full rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-indigo-500 transition-all"
+            style={{ width: `${task.progress}%` }}
+          />
+        </div>
       </div>
 
       {/* ── Tags + Time Tracking Row ──────────────────────────────────────── */}

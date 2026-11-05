@@ -46,6 +46,14 @@ export type Priority = "low" | "medium" | "high" | "urgent";
  */
 export type Theme = "light" | "dark";
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  role: string;
+}
+
 /**
  * The health status of a Project, determined by the project lead.
  *

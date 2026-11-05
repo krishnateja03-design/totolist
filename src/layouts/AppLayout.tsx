@@ -47,6 +47,8 @@ import { useAppStore } from "../store/useAppStore";
 import { NotificationsDropdown } from "../features/NotificationsDropdown";
 import { TaskModal } from "../features/TaskModal";
 import { ProjectModal } from "../features/ProjectModal";
+import { AuthModal } from "../features/AuthModal";
+import { LogIn, LogOut } from "lucide-react";
 
 /**
  * Navigation links rendered in the Sidebar.
@@ -93,15 +95,19 @@ function Sidebar({
   onClose,
   onNewTask,
   onNewProject,
+  onOpenAuth,
 }: {
   open: boolean;
   onClose: () => void;
   onNewTask: () => void;
   onNewProject: () => void;
+  onOpenAuth: () => void;
 }) {
   const projects = useAppStore((s) => s.projects);
   const selectedProjectId = useAppStore((s) => s.selectedProjectId);
   const setSelectedProject = useAppStore((s) => s.setSelectedProject);
+  const currentUser = useAppStore((s) => s.currentUser);
+  const logout = useAppStore((s) => s.logout);
 
   return (
     <>
@@ -230,15 +236,31 @@ function Sidebar({
           {/* Divider */}
           <div className="mx-2 border-t border-white/8 mb-3" />
 
-          {/* User Profile */}
-          <div className="mx-1 flex items-center gap-2.5 rounded-lg p-2 hover:bg-white/6 transition cursor-pointer group">
-            <Avatar name="KT" />
-            <div className="min-w-0 flex-1">
-              <b className="block truncate text-[12px] font-semibold text-indigo-100">Krishna Teja</b>
-              <p className="truncate text-[10px] text-indigo-300/50">Engineering Lead</p>
+          {/* User Profile / Auth Button */}
+          {currentUser ? (
+            <div className="mx-1 flex items-center gap-2.5 rounded-lg p-2 hover:bg-white/6 transition group">
+              <Avatar name={currentUser.avatar || currentUser.name.slice(0, 2).toUpperCase()} />
+              <div className="min-w-0 flex-1">
+                <b className="block truncate text-[12px] font-semibold text-indigo-100">{currentUser.name}</b>
+                <p className="truncate text-[10px] text-indigo-300/50">{currentUser.role || "Project Lead"}</p>
+              </div>
+              <button
+                onClick={logout}
+                title="Log out"
+                className="p-1 rounded text-indigo-300/40 hover:text-rose-400 hover:bg-white/10 transition"
+              >
+                <LogOut size={14} />
+              </button>
             </div>
-            <Settings size={13} className="text-indigo-300/30 group-hover:text-indigo-300/70 transition shrink-0" />
-          </div>
+          ) : (
+            <button
+              onClick={onOpenAuth}
+              className="mx-1 flex items-center justify-center gap-2 rounded-lg bg-white/10 hover:bg-white/15 p-2.5 text-[12px] font-semibold text-white transition"
+            >
+              <LogIn size={14} className="text-indigo-300" />
+              <span>Sign In / Register</span>
+            </button>
+          )}
         </div>
       </motion.aside>
     </>
@@ -266,10 +288,13 @@ export function AppLayout() {
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   /** Controls visibility of the project creation modal */
   const [projectModalOpen, setProjectModalOpen] = useState(false);
+  /** Controls visibility of the sign in / register modal */
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   // Read theme and toggle action from global store
   const theme = useAppStore((s) => s.theme);
   const toggle = useAppStore((s) => s.toggleTheme);
+  const currentUser = useAppStore((s) => s.currentUser);
   // Notifications used to show unread count badge on the bell button
   const notifications = useAppStore((s) => s.notifications);
 
@@ -303,6 +328,7 @@ export function AppLayout() {
           onClose={() => setMobile(false)}
           onNewTask={() => setTaskModalOpen(true)}
           onNewProject={() => setProjectModalOpen(true)}
+          onOpenAuth={() => setAuthModalOpen(true)}
         />
 
         <main className="min-w-0 flex-1 p-3 lg:p-5">
@@ -383,13 +409,24 @@ export function AppLayout() {
                 <span>Add Task</span>
               </Button>
 
-              {/* Avatar */}
-              <div className="hidden pl-0.5 sm:block">
-                <Avatar name="KT" />
-              </div>
+              {/* Avatar / Sign In */}
+              {currentUser ? (
+                <div className="hidden pl-0.5 sm:block" title={`${currentUser.name} (${currentUser.email})`}>
+                  <Avatar name={currentUser.avatar || currentUser.name.slice(0, 2).toUpperCase()} />
+                </div>
+              ) : (
+                <button
+                  onClick={() => setAuthModalOpen(true)}
+                  className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+                >
+                  <LogIn size={13} className="text-indigo-500" />
+                  <span>Sign In</span>
+                </button>
+              )}
             </div>
           </header>
 
+          {/* Main Content Area */}
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, y: 10 }}
@@ -403,6 +440,7 @@ export function AppLayout() {
 
       <TaskModal open={taskModalOpen} onClose={() => setTaskModalOpen(false)} />
       <ProjectModal open={projectModalOpen} onClose={() => setProjectModalOpen(false)} />
+      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </div>
   );
 }

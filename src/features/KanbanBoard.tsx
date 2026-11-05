@@ -131,36 +131,35 @@ function Column({
   return (
     <section
       ref={setNodeRef} // Register as drop target for @dnd-kit
-      className={`min-h-[560px] rounded-3xl p-4 transition-all duration-200 border border-black/5 dark:border-white/10 ${
+      className={`min-h-[560px] rounded-xl p-3 transition-all duration-200 border border-slate-200/80 dark:border-white/8 ${
         isOver
-          ? "bg-indigo-100/70 dark:bg-indigo-950/40 ring-4 ring-indigo-400/50" // Highlighted drop target state
-          : "bg-white/50 dark:bg-slate-900/50 backdrop-blur-md"                // Default resting state
+          ? "bg-indigo-50/70 dark:bg-indigo-950/40 ring-2 ring-indigo-500"
+          : "bg-slate-50/50 dark:bg-slate-900/40"
       }`}
     >
-      {/* Column header: gradient badge with task count + quick-add button */}
-      <div className="mb-4 flex items-center justify-between">
-        <div
-          className={`rounded-2xl bg-gradient-to-r ${gradient} px-3.5 py-1.5 text-xs font-black text-white shadow-md flex items-center gap-1.5`}
-        >
-          <span>{title}</span>
-          {/* Task count badge – updates reactively as tasks move in/out */}
-          <span className="rounded-full bg-white/20 px-1.5 py-0.2 text-[10px]">
+      {/* Column header */}
+      <div className="mb-3 flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            {title}
+          </span>
+          <span className="rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
             {tasks.length}
           </span>
         </div>
 
-        {/* Quick-add button – opens TaskModal with this column's status pre-selected */}
+        {/* Quick-add button */}
         <button
           onClick={() => onOpenTaskModal(id)}
-          className="rounded-xl p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-white transition-colors"
-          title={`Add item to ${title}`}
+          className="rounded-lg p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 dark:hover:bg-slate-800 transition"
+          title={`Add task to ${title}`}
         >
-          <Plus size={16} />
+          <Plus size={14} />
         </button>
       </div>
 
       {/* Task cards list */}
-      <div className="space-y-3.5">
+      <div className="space-y-2.5">
         {/* Empty state placeholder – shown when column has no tasks */}
         {tasks.length === 0 && (
           <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center text-xs font-semibold text-slate-400">
