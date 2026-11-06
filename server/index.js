@@ -174,6 +174,8 @@ function formatTask(row) {
     assignees: JSON.parse(row.assignees || '[]'),
     tags: JSON.parse(row.tags || '[]'),
     blockedBy: JSON.parse(row.blockedBy || '[]'),
+    commentsList: JSON.parse(row.commentsList || '[]'),
+    subtasks: JSON.parse(row.subtasks || '[]'),
   };
 }
 
@@ -225,13 +227,6 @@ app.post('/api/projects', (req, res) => {
       JSON.stringify(p.notes || []),
       JSON.stringify(p.activity || [])
     );
-
-    const created = db.prepare('SELECT * FROM projects WHERE id = ?').get(p.id);
-    res.status(201).json(formatProject(created));
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
     const created = db.prepare('SELECT * FROM projects WHERE id = ?').get(p.id);
     res.status(201).json(formatProject(created));
@@ -320,8 +315,8 @@ app.post('/api/tasks', (req, res) => {
     const t = req.body;
     const stmt = db.prepare(`
       INSERT INTO tasks (
-        id, userId, projectId, title, description, status, priority, assignees, dueDate, startDate, estimatedHours, loggedHours, comments, attachments, progress, tags, blockedBy
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, userId, projectId, title, description, status, priority, assignees, dueDate, startDate, estimatedHours, loggedHours, comments, commentsList, subtasks, attachments, progress, tags, blockedBy
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -337,7 +332,9 @@ app.post('/api/tasks', (req, res) => {
       t.startDate || null,
       t.estimatedHours || 0,
       t.loggedHours || 0,
-      t.comments || 0,
+      t.comments || (t.commentsList ? t.commentsList.length : 0),
+      JSON.stringify(t.commentsList || []),
+      JSON.stringify(t.subtasks || []),
       t.attachments || 0,
       t.progress || 0,
       JSON.stringify(t.tags || []),
@@ -367,6 +364,8 @@ app.put('/api/tasks/:id', (req, res) => {
         estimatedHours = COALESCE(?, estimatedHours),
         loggedHours = COALESCE(?, loggedHours),
         comments = COALESCE(?, comments),
+        commentsList = COALESCE(?, commentsList),
+        subtasks = COALESCE(?, subtasks),
         attachments = COALESCE(?, attachments),
         progress = COALESCE(?, progress),
         tags = COALESCE(?, tags),
@@ -386,6 +385,8 @@ app.put('/api/tasks/:id', (req, res) => {
       t.estimatedHours,
       t.loggedHours,
       t.comments,
+      t.commentsList ? JSON.stringify(t.commentsList) : undefined,
+      t.subtasks ? JSON.stringify(t.subtasks) : undefined,
       t.attachments,
       t.progress,
       t.tags ? JSON.stringify(t.tags) : undefined,

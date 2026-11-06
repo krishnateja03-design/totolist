@@ -168,6 +168,10 @@ type Store = {
    */
   moveTask: (id: string, status: Status) => void;
 
+  addTaskComment: (taskId: string, comment: string) => void;
+  toggleSubtask: (taskId: string, subtaskId: string) => void;
+  addSubtask: (taskId: string, title: string) => void;
+
   /**
    * Increments the `loggedHours` of a task by the given amount.
    * Called from the quick "Log Time" popover on the TaskCard.
@@ -466,6 +470,97 @@ export const useAppStore = create<Store>()(
               : t,
           ),
         })),
+
+      addTaskComment: (taskId, comment) =>
+        set((s) => {
+          const user = s.currentUser;
+          const newComment = {
+            id: `c-${crypto.randomUUID().slice(0, 8)}`,
+            author: user?.name || "Team Member",
+            authorAvatar: user?.avatar || "TM",
+            content: comment,
+            createdAt: new Date().toISOString(),
+          };
+
+          const target = s.tasks.find((t) => t.id === taskId);
+          if (target) {
+            const updatedComments = [newComment, ...(target.commentsList || [])];
+            api.updateTask(taskId, {
+              ...target,
+              commentsList: updatedComments,
+              comments: updatedComments.length,
+            }).catch(() => {});
+          }
+
+          return {
+            tasks: s.tasks.map((t) => {
+              if (t.id !== taskId) return t;
+              const updatedList = [newComment, ...(t.commentsList || [])];
+              return {
+                ...t,
+                commentsList: updatedList,
+                comments: updatedList.length,
+              };
+            }),
+          };
+        }),
+
+      addSubtask: (taskId, title) =>
+        set((s) => {
+          const newSubtask = {
+            id: `sub-${crypto.randomUUID().slice(0, 8)}`,
+            title,
+            completed: false,
+          };
+          const target = s.tasks.find((t) => t.id === taskId);
+          if (target) {
+            const updatedList = [...(target.subtasks || []), newSubtask];
+            api.updateTask(taskId, {
+              ...target,
+              subtasks: updatedList,
+            }).catch(() => {});
+          }
+          return {
+            tasks: s.tasks.map((t) => {
+              if (t.id !== taskId) return t;
+              return {
+                ...t,
+                subtasks: [...(t.subtasks || []), newSubtask],
+              };
+            }),
+          };
+        }),
+
+      toggleSubtask: (taskId, subtaskId) =>
+        set((s) => {
+          const target = s.tasks.find((t) => t.id === taskId);
+          if (!target) return {};
+          const updatedSubtasks = (target.subtasks || []).map((sub) =>
+            sub.id === subtaskId ? { ...sub, completed: !sub.completed } : sub,
+          );
+          const completedCount = updatedSubtasks.filter((s) => s.completed).length;
+          const calculatedProgress =
+            updatedSubtasks.length > 0
+              ? Math.round((completedCount / updatedSubtasks.length) * 100)
+              : target.progress;
+
+          api.updateTask(taskId, {
+            ...target,
+            subtasks: updatedSubtasks,
+            progress: calculatedProgress,
+          }).catch(() => {});
+
+          return {
+            tasks: s.tasks.map((t) => {
+              if (t.id !== taskId) return t;
+              return {
+                ...t,
+                subtasks: updatedSubtasks,
+                progress: calculatedProgress,
+              };
+            }),
+          };
+        }),
 
       // ─── Utility ────────────────────────────────────────────────────────
 

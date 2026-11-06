@@ -64,7 +64,13 @@ import { TaskCard } from "../components/TaskCard";
  *
  * @param task - The task data to render inside the draggable wrapper
  */
-function DraggableTask({ task }: { task: Task }) {
+function DraggableTask({
+  task,
+  onSelectTask,
+}: {
+  task: Task;
+  onSelectTask?: (id: string) => void;
+}) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: task.id, // Must be unique; used by DndContext to identify the dragged item
@@ -80,6 +86,7 @@ function DraggableTask({ task }: { task: Task }) {
       {...listeners}   // Attach drag start/move/end event handlers
       {...attributes}  // Attach ARIA role="button" and keyboard drag accessibility props
       className={isDragging ? "opacity-30 cursor-grabbing" : "cursor-grab"}
+      onClick={() => onSelectTask?.(task.id)}
     >
       <TaskCard task={task} />
     </div>
@@ -112,12 +119,14 @@ function Column({
   gradient,
   selectedProjectId,
   onOpenTaskModal,
+  onSelectTask,
 }: {
   id: Status;
   title: string;
   gradient: string;
   selectedProjectId: string;
   onOpenTaskModal: (status: Status) => void;
+  onSelectTask?: (id: string) => void;
 }) {
   // Register this section as a droppable zone; isOver indicates active hover
   const { setNodeRef, isOver } = useDroppable({ id });
@@ -169,7 +178,7 @@ function Column({
 
         {/* Render each task as a DraggableTask wrapper around TaskCard */}
         {tasks.map((task) => (
-          <DraggableTask key={task.id} task={task} />
+          <DraggableTask key={task.id} task={task} onSelectTask={onSelectTask} />
         ))}
       </div>
     </section>
@@ -189,9 +198,11 @@ function Column({
 export function KanbanBoard({
   selectedProjectId,
   onOpenTaskModal,
+  onSelectTask,
 }: {
   selectedProjectId: string;
   onOpenTaskModal: (status: Status) => void;
+  onSelectTask?: (id: string) => void;
 }) {
   const columns = useAppStore((s) => s.columns);  // Static column definitions from store
   const tasks = useAppStore((s) => s.tasks);       // All tasks (used only for onDragStart lookup)
@@ -252,6 +263,7 @@ export function KanbanBoard({
             {...column}
             selectedProjectId={selectedProjectId}
             onOpenTaskModal={onOpenTaskModal}
+            onSelectTask={onSelectTask}
           />
         ))}
       </div>

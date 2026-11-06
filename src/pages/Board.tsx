@@ -3,6 +3,7 @@ import { KanbanBoard } from "../features/KanbanBoard";
 import { useAppStore } from "../store/useAppStore";
 import { Button } from "../components/Button";
 import { TaskModal } from "../features/TaskModal";
+import { TaskDetailModal } from "../features/TaskDetailModal";
 import {
   Plus,
   Filter,
@@ -25,6 +26,7 @@ export default function Board() {
   const tasks = useAppStore((s) => s.tasks);
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [selectedDrawerTaskId, setSelectedDrawerTaskId] = useState<string | null>(null);
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -155,11 +157,17 @@ export default function Board() {
       <KanbanBoard
         selectedProjectId={selectedProjectId}
         onOpenTaskModal={() => setIsTaskModalOpen(true)}
+        onSelectTask={(id) => setSelectedDrawerTaskId(id)}
       />
 
       <TaskModal
         open={isTaskModalOpen}
         onClose={() => setIsTaskModalOpen(false)}
+      />
+
+      <TaskDetailModal
+        taskId={selectedDrawerTaskId}
+        onClose={() => setSelectedDrawerTaskId(null)}
       />
     </div>
   );

@@ -46,6 +46,8 @@ export function initDb() {
       estimatedHours REAL DEFAULT 0,
       loggedHours REAL DEFAULT 0,
       comments INTEGER DEFAULT 0,
+      commentsList TEXT DEFAULT '[]',
+      subtasks TEXT DEFAULT '[]',
       attachments INTEGER DEFAULT 0,
       progress INTEGER DEFAULT 0,
       tags TEXT DEFAULT '[]',

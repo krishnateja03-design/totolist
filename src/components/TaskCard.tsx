@@ -44,7 +44,13 @@ import { useState } from "react";
  *
  * @param task - The Task object from the global store to display
  */
-export function TaskCard({ task }: { task: Task }) {
+export function TaskCard({
+  task,
+  onClick,
+}: {
+  task: Task;
+  onClick?: () => void;
+}) {
   // ─── Store Actions ──────────────────────────────────────────────────────
   const del = useAppStore((s) => s.deleteTask);       // Action to permanently remove this task
   const logHours = useAppStore((s) => s.logTaskHours); // Action to increment logged hours
@@ -73,7 +79,8 @@ export function TaskCard({ task }: { task: Task }) {
     <motion.div
       layout // Animates position changes when tasks move between columns
       whileHover={{ scale: 1.01, y: -2 }} // Subtle lift on hover for tactile feedback
-      className="soft-card group relative rounded-xl p-3.5 transition-all duration-200 border border-slate-200/80 dark:border-white/8 hover:shadow-md"
+      onClick={onClick}
+      className="soft-card group relative rounded-xl p-3.5 transition-all duration-200 border border-slate-200/80 dark:border-white/8 hover:shadow-md cursor-pointer"
     >
       {/* ── Card Header: Priority + Project Badge + Title + Delete Button ── */}
       <div className="flex items-start justify-between gap-3">
@@ -121,20 +128,6 @@ export function TaskCard({ task }: { task: Task }) {
         >
           <Trash2 size={13} />
         </button>
-      </div>
-
-      {/* ── Completion Progress Bar ── */}
-      <div className="mt-2.5">
-        <div className="flex justify-between items-center text-[10px] font-medium text-slate-400 mb-1">
-          <span>Progress</span>
-          <span className="font-semibold text-slate-700 dark:text-slate-300">{task.progress}%</span>
-        </div>
-        <div className="h-1 w-full rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-          <div
-            className="h-full rounded-full bg-indigo-500 transition-all"
-            style={{ width: `${task.progress}%` }}
-          />
-        </div>
       </div>
 
       {/* ── Tags + Time Tracking Row ──────────────────────────────────────── */}

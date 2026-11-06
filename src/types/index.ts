@@ -276,9 +276,26 @@ export interface Project {
  *  - The Timeline page (as duration bars)
  *  - The ProjectDetail workspace (tasks tab)
  */
+export interface TaskComment {
+  id: string;
+  author: string;
+  authorAvatar?: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface TaskSubtask {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
 export interface Task {
   /** Unique identifier – generated as "t-<random>" by the store */
   id: string;
+
+  /** Reference to user owner for multi-tenant isolation */
+  userId?: string;
 
   /**
    * Reference to the parent Project.
@@ -325,8 +342,14 @@ export interface Task {
    */
   loggedHours?: number;
 
-  /** Number of comments posted on this task (currently a counter; chat UI is future scope) */
+  /** Number of comments posted on this task */
   comments: number;
+
+  /** Threaded discussion messages */
+  commentsList?: TaskComment[];
+
+  /** Interactive checklist items */
+  subtasks?: TaskSubtask[];
 
   /** Number of file attachments linked to this task */
   attachments: number;
