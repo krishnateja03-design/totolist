@@ -236,7 +236,7 @@ export const useAppStore = create<Store>()(
       currentUser: null,
 
       setCurrentUser: (currentUser) => set({ currentUser }),
-      logout: () => set({ currentUser: null }),
+      logout: () => set({ currentUser: null, projects: [], tasks: [], notifications: [] }),
 
       // ─── Theme ─────────────────────────────────────────────────────────
 
@@ -253,15 +253,15 @@ export const useAppStore = create<Store>()(
 
       syncWithBackend: async () => {
         try {
-          const backendProjects = await api.getProjects();
-          const backendTasks = await api.getTasks();
+          const user = useAppStore.getState().currentUser;
+          if (!user) return;
+          const backendProjects = await api.getProjects(user.id);
+          const backendTasks = await api.getTasks(user.id);
 
-          if (backendProjects.length > 0 || backendTasks.length > 0) {
-            set({
-              projects: backendProjects,
-              tasks: backendTasks,
-            });
-          }
+          set({
+            projects: backendProjects || [],
+            tasks: backendTasks || [],
+          });
         } catch {
           // Server offline; state safely runs in local fallback mode
         }
@@ -271,6 +271,7 @@ export const useAppStore = create<Store>()(
 
       addProject: (project) =>
         set((s) => {
+          const user = s.currentUser;
           // Build the full project object with a generated ID and initial activity log
           const newProject: Project = {
             ...project,
@@ -278,14 +279,14 @@ export const useAppStore = create<Store>()(
             activity: [
               {
                 id: crypto.randomUUID(),
-                user: "Krishna Teja",
+                user: user?.name || "You",
                 action: "created project",
                 details: project.name,
                 timestamp: "Just now",
               },
             ],
           };
-          api.createProject(newProject).catch(() => {});
+          api.createProject({ ...newProject, userId: user?.id }).catch(() => {});
           return {
             // Prepend the new project so it appears first in the list
             projects: [newProject, ...s.projects],
@@ -390,6 +391,7 @@ export const useAppStore = create<Store>()(
 
       addTask: (task) =>
         set((s) => {
+          const user = s.currentUser;
           // Build the full task object with defaults for optional fields
           const newTask: Task = {
             ...task,
@@ -397,7 +399,7 @@ export const useAppStore = create<Store>()(
             loggedHours: task.loggedHours ?? 0,       // Default: no hours logged yet
             estimatedHours: task.estimatedHours ?? 4, // Default: 4h estimate
           };
-          api.createTask(newTask).catch(() => {});
+          api.createTask({ ...newTask, userId: user?.id }).catch(() => {});
           return {
             // Prepend so the newest task appears first in tables/boards
             tasks: [newTask, ...s.tasks],

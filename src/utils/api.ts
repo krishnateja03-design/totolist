@@ -40,9 +40,44 @@ export const api = {
     return data;
   },
 
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const res = await fetch(`${API_BASE}/auth/change-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, currentPassword, newPassword }),
+    });
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error('Backend server is unreachable.');
+    }
+    if (!res.ok) throw new Error(data.error || 'Failed to update password');
+    return data;
+  },
+
+  async updateProfile(userId: string, name: string, role?: string) {
+    const res = await fetch(`${API_BASE}/auth/update-profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, name, role }),
+    });
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error('Backend server is unreachable.');
+    }
+    if (!res.ok) throw new Error(data.error || 'Failed to update profile');
+    return data;
+  },
+
   // Projects
-  async getProjects() {
-    const res = await fetch(`${API_BASE}/projects`);
+  async getProjects(userId?: string) {
+    const url = userId ? `${API_BASE}/projects?userId=${encodeURIComponent(userId)}` : `${API_BASE}/projects`;
+    const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch projects');
     return res.json();
   },
@@ -76,8 +111,9 @@ export const api = {
   },
 
   // Tasks
-  async getTasks() {
-    const res = await fetch(`${API_BASE}/tasks`);
+  async getTasks(userId?: string) {
+    const url = userId ? `${API_BASE}/tasks?userId=${encodeURIComponent(userId)}` : `${API_BASE}/tasks`;
+    const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch tasks');
     return res.json();
   },

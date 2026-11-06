@@ -24,11 +24,10 @@ export default function App() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
-    // Seed backend database if empty, then sync
-    api.seedIfEmpty(projects, tasks).then(() => {
+    if (currentUser) {
       syncWithBackend();
-    });
-  }, []);
+    }
+  }, [currentUser]);
 
   // When not logged in, present high-converting professional product landing page
   if (!currentUser) {

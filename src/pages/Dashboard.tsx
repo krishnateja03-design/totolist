@@ -21,6 +21,7 @@ import { AnimatedCounter } from "../components/AnimatedCounter";
 import { ProjectModal } from "../features/ProjectModal";
 import { TaskModal } from "../features/TaskModal";
 import { Button } from "../components/Button";
+import { QuickCreateDropdown } from "../components/QuickCreateDropdown";
 
 const kpiConfig = [
   { grad: "from-indigo-500 to-violet-500", iconBg: "bg-indigo-500" },
@@ -76,29 +77,36 @@ export default function Dashboard() {
   return (
     <div className="space-y-5 pb-10">
       {/* Page Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{greeting} 👋</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/10 dark:bg-indigo-400/10 px-2.5 py-0.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live Telemetry Active
+            </span>
+          </div>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+            {greeting}, Workspace Command 👋
+          </h1>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             {projects.length === 0
-              ? "Welcome to ProFlow. Create your first project to get started."
-              : `${projects.length} project${projects.length !== 1 ? "s" : ""} · ${tasks.length} tasks · ${completed} completed`}
+              ? "Welcome to ProFlow. Create your first project to activate sprint tracking."
+              : `Tracking ${projects.length} initiatives · ${tasks.length} total work items · ${completed} completed (${Math.round((completed / (tasks.length || 1)) * 100)}% velocity)`}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Button
-            onClick={() => setIsProjectModalOpen(true)}
-            variant="glass"
-            className="hidden md:flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold border border-slate-200 dark:border-slate-700"
-          >
-            <Plus className="h-3.5 w-3.5" /> New Project
-          </Button>
-          <Button
-            onClick={() => setIsTaskModalOpen(true)}
-            className="flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 transition-colors"
-          >
-            <Plus className="h-3.5 w-3.5" /> Add Task
-          </Button>
+          <Link to="/board">
+            <Button
+              variant="glass"
+              className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 hover:border-indigo-400 transition"
+            >
+              <ArrowUpRight className="h-3.5 w-3.5 text-indigo-500" /> Open Sprint Board
+            </Button>
+          </Link>
+          <QuickCreateDropdown
+            onNewTask={() => setIsTaskModalOpen(true)}
+            onNewProject={() => setIsProjectModalOpen(true)}
+          />
         </div>
       </div>
 

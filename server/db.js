@@ -12,6 +12,7 @@ export function initDb() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS projects (
       id TEXT PRIMARY KEY,
+      userId TEXT,
       name TEXT NOT NULL,
       key TEXT NOT NULL,
       description TEXT,
@@ -33,6 +34,7 @@ export function initDb() {
 
     CREATE TABLE IF NOT EXISTS tasks (
       id TEXT PRIMARY KEY,
+      userId TEXT,
       projectId TEXT,
       title TEXT NOT NULL,
       description TEXT,

@@ -49,6 +49,8 @@ import { TaskModal } from "../features/TaskModal";
 import { ProjectModal } from "../features/ProjectModal";
 import { AuthModal } from "../features/AuthModal";
 import { LogIn, LogOut } from "lucide-react";
+import { QuickCreateDropdown } from "../components/QuickCreateDropdown";
+import { UserProfileMenu } from "../components/UserProfileMenu";
 
 /**
  * Navigation links rendered in the Sidebar.
@@ -222,15 +224,13 @@ function Sidebar({
             ))}
           </nav>
 
-          {/* New Task Button */}
+          {/* Quick Create in Sidebar */}
           <div className="mx-1 mt-4 mb-3">
-            <button
-              onClick={onNewTask}
-              className="ripple w-full flex items-center justify-center gap-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 py-2.5 text-[12px] font-semibold text-white shadow-lg shadow-indigo-500/30 transition-colors"
-            >
-              <Plus size={15} />
-              <span>New Task</span>
-            </button>
+            <QuickCreateDropdown
+              onNewTask={onNewTask}
+              onNewProject={onNewProject}
+              className="w-full [&>button]:w-full [&>button]:justify-center"
+            />
           </div>
 
           {/* Divider */}
@@ -295,6 +295,7 @@ export function AppLayout() {
   const theme = useAppStore((s) => s.theme);
   const toggle = useAppStore((s) => s.toggleTheme);
   const currentUser = useAppStore((s) => s.currentUser);
+  const logout = useAppStore((s) => s.logout);
   // Notifications used to show unread count badge on the bell button
   const notifications = useAppStore((s) => s.notifications);
 
@@ -354,15 +355,6 @@ export function AppLayout() {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Theme Toggle */}
-              <button
-                aria-label="Toggle color theme"
-                onClick={toggle}
-                className="rounded-xl bg-slate-100 dark:bg-slate-800 p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
-              >
-                {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
-              </button>
-
               {/* Notifications */}
               <div className="relative">
                 <button
@@ -390,30 +382,15 @@ export function AppLayout() {
               {/* Divider */}
               <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
 
-              {/* New Project */}
-              <Button
-                onClick={() => setProjectModalOpen(true)}
-                variant="glass"
-                className="hidden md:flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[12px] font-semibold border border-slate-200 dark:border-slate-700"
-              >
-                <FolderKanban size={14} />
-                <span>New Project</span>
-              </Button>
+              {/* Unified Quick Create Dropdown (replaces duplicate buttons) */}
+              <QuickCreateDropdown
+                onNewTask={() => setTaskModalOpen(true)}
+                onNewProject={() => setProjectModalOpen(true)}
+              />
 
-              {/* New Task */}
-              <Button
-                onClick={() => setTaskModalOpen(true)}
-                className="flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-md shadow-indigo-500/25 transition-colors"
-              >
-                <Plus size={14} />
-                <span>Add Task</span>
-              </Button>
-
-              {/* Avatar / Sign In */}
+              {/* Avatar Dropdown / Sign In */}
               {currentUser ? (
-                <div className="hidden pl-0.5 sm:block" title={`${currentUser.name} (${currentUser.email})`}>
-                  <Avatar name={currentUser.avatar || currentUser.name.slice(0, 2).toUpperCase()} />
-                </div>
+                <UserProfileMenu user={currentUser} onLogout={logout} />
               ) : (
                 <button
                   onClick={() => setAuthModalOpen(true)}

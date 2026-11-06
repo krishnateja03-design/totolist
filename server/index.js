@@ -93,6 +93,65 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
+app.post('/api/auth/change-password', (req, res) => {
+  try {
+    const { userId, currentPassword, newPassword } = req.body;
+    if (!userId || !currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    const userRow = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+    if (!userRow) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const valid = verifyPassword(currentPassword, userRow.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Incorrect current password' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    const newHash = hashPassword(newPassword);
+    db.prepare('UPDATE users SET passwordHash = ? WHERE id = ?').run(newHash, userId);
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/auth/update-profile', (req, res) => {
+  try {
+    const { userId, name, role } = req.body;
+    if (!userId || !name) {
+      return res.status(400).json({ error: 'User ID and name are required' });
+    }
+
+    const initials = name
+      .split(' ')
+      .filter(Boolean)
+      .map((w) => w[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || 'US';
+
+    db.prepare('UPDATE users SET name = ?, role = ?, avatar = ? WHERE id = ?').run(
+      name,
+      role || 'Project Lead',
+      initials,
+      userId
+    );
+
+    const updated = db.prepare('SELECT id, name, email, avatar, role FROM users WHERE id = ?').get(userId);
+    res.json({ user: updated, success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Helper parsers for JSON columns
 function formatProject(row) {
   if (!row) return null;
@@ -124,7 +183,13 @@ function formatTask(row) {
 
 app.get('/api/projects', (req, res) => {
   try {
-    const rows = db.prepare('SELECT * FROM projects ORDER BY createdAt DESC').all();
+    const userId = req.query.userId;
+    let rows;
+    if (userId) {
+      rows = db.prepare('SELECT * FROM projects WHERE userId = ? ORDER BY createdAt DESC').all(userId);
+    } else {
+      rows = db.prepare('SELECT * FROM projects ORDER BY createdAt DESC').all();
+    }
     res.json(rows.map(formatProject));
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -136,12 +201,13 @@ app.post('/api/projects', (req, res) => {
     const p = req.body;
     const stmt = db.prepare(`
       INSERT INTO projects (
-        id, name, key, description, color, icon, category, health, status, lead, startDate, targetDate, budgetAllocated, budgetSpent, milestones, notes, activity
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, userId, name, key, description, color, icon, category, health, status, lead, startDate, targetDate, budgetAllocated, budgetSpent, milestones, notes, activity
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
       p.id || `prj-${Date.now()}`,
+      p.userId || null,
       p.name,
       p.key,
       p.description || '',
@@ -159,6 +225,13 @@ app.post('/api/projects', (req, res) => {
       JSON.stringify(p.notes || []),
       JSON.stringify(p.activity || [])
     );
+
+    const created = db.prepare('SELECT * FROM projects WHERE id = ?').get(p.id);
+    res.status(201).json(formatProject(created));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
     const created = db.prepare('SELECT * FROM projects WHERE id = ?').get(p.id);
     res.status(201).json(formatProject(created));
@@ -229,7 +302,13 @@ app.delete('/api/projects/:id', (req, res) => {
 
 app.get('/api/tasks', (req, res) => {
   try {
-    const rows = db.prepare('SELECT * FROM tasks ORDER BY createdAt DESC').all();
+    const userId = req.query.userId;
+    let rows;
+    if (userId) {
+      rows = db.prepare('SELECT * FROM tasks WHERE userId = ? ORDER BY createdAt DESC').all(userId);
+    } else {
+      rows = db.prepare('SELECT * FROM tasks ORDER BY createdAt DESC').all();
+    }
     res.json(rows.map(formatTask));
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -241,12 +320,13 @@ app.post('/api/tasks', (req, res) => {
     const t = req.body;
     const stmt = db.prepare(`
       INSERT INTO tasks (
-        id, projectId, title, description, status, priority, assignees, dueDate, startDate, estimatedHours, loggedHours, comments, attachments, progress, tags, blockedBy
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, userId, projectId, title, description, status, priority, assignees, dueDate, startDate, estimatedHours, loggedHours, comments, attachments, progress, tags, blockedBy
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
       t.id || `t-${Date.now()}`,
+      t.userId || null,
       t.projectId || null,
       t.title,
       t.description || '',
