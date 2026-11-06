@@ -1,6 +1,7 @@
 {
   "scripts": {
     "dev": "vite",
+    "dev:all": "concurrently -n \"API,UI\" -c \"cyan,magenta\" \"node server/index.js\" \"vite\"",
     "server": "node server/index.js",
     "start": "node server/index.js",
     "build": "tsc -b && vite build",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3"
+    "@types/react-dom": "^19.2.3",
+    "concurrently": "^10.0.6"
   }
 }
